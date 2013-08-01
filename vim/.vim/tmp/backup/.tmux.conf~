@@ -1,0 +1,39 @@
+# Use something easier to type as the prefix.
+set -g prefix C-f
+unbind C-b
+bind C-f send-prefix
+
+# 256 colors please
+set -g default-terminal "screen-256color"
+
+# relax
+set -sg escape-time 0
+set -sg repeat-time 600
+
+# shut up
+set -g quiet on
+
+# pane movement
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# pane resizing
+bind -r C-h resize-pane -L 5
+bind -r C-j resize-pane -D 5
+bind -r C-k resize-pane -U 5
+bind -r C-l resize-pane -R 5
+
+# mouse
+set -g mode-mouse on
+setw -g mouse-select-window on
+setw -g mouse-select-pane on
+
+# reload the config.
+bind r source-file ~/.tmux.conf \; display "Reloaded ~/.tmux.conf"
+
+# saner splitting.
+bind v split-window -h
+bind s split-window -v
+bind S choose-session
