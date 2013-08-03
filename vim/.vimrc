@@ -98,10 +98,10 @@ augroup line_return
 augroup END
 
 " don't move around in insert mode
-"inoremap <up> <nop>
-"inoremap <down> <nop>
-"inoremap <left> <nop>
-"inoremap <right> <nop>
+inoremap <up> <nop>
+inoremap <down> <nop>
+inoremap <left> <nop>
+inoremap <right> <nop>
 
 " show whitespace
 " must be inserted before the colorscheme command
