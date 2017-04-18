@@ -53,6 +53,7 @@ au InsertLeave * match ExtraWhitespace /\s\+$/
 
 " color scheme
 set background=light
+let g:gruvbox_italic=1
 colorscheme gruvbox
 
 " airline color scheme
