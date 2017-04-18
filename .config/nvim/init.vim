@@ -11,6 +11,11 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'morhetz/gruvbox'
 Plug 'w0rp/ale'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'zchee/deoplete-clang'
+Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
+Plug 'ervandew/supertab'
+Plug 'jreybert/vimagit'
 
 " initialize plugin system
 call plug#end()
@@ -85,6 +90,20 @@ augroup line_return
     \   execute 'normal! g`"zvzz' |
     \ endif
 augroup END
+
+" deoplete
+let g:deoplete#enable_at_startup = 1
+let g:tern_request_timeout = 1
+let g:tern_show_signature_in_pum = '0' " disable full signature type
+let g:tern#command = ["tern"]
+let g:tern#arguments = ["--persistent"]
+let g:tern#filetypes = ['jsx', 'javascript.jsx', 'vue']
+set completeopt-=preview
+let g:deoplete#sources#clang#libclang_path = '/usr/lib/libclang.so'
+let g:deoplete#sources#clang#clang_header = '/usr/lib/clang'
+
+" ale
+let g:ale_linters = {'c': [], 'cpp': []}
 
 " # searching / movement
 " ------------------------------------------------------------------------------
