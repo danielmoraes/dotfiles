@@ -129,6 +129,12 @@ set virtualedit+=block
 " clear search matches
 noremap <silent> <leader><space> :noh<cr>:call clearmatches()<cr>
 
+" easier moving of code blocks
+" try to go into visual mode (v), then select several lines of code here and
+" then press '>' several times.
+vnoremap < <gv  " better indentation
+vnoremap > >gv  " better indentation
+
 " # mappings
 " ------------------------------------------------------------------------------
 
