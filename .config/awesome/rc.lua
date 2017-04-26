@@ -426,7 +426,7 @@ globalkeys = awful.util.table.join(
 
     awful.key({ modkey, "Control" }, "x" ,
         function ()
-            awful.util.spawn_with_shell("xrandr --output DP-0 --primary --auto --output DP-4 --auto --rotate left --right-of DP-0 --output HDMI-0 --auto --right-of DP-4")
+            awful.util.spawn_with_shell("xrandr --output DP-0 --primary --auto --output HDMI-0 --auto --right-of DP-0")
         end),
 
     -- Copy to clipboard
