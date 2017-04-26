@@ -16,6 +16,9 @@ Plug 'zchee/deoplete-clang'
 Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 Plug 'ervandew/supertab'
 Plug 'jreybert/vimagit'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'Yggdroot/indentLine'
+Plug 'scrooloose/nerdcommenter'
 
 " initialize plugin system
 call plug#end()
@@ -24,9 +27,10 @@ call plug#end()
 " ------------------------------------------------------------------------------
 
 set nocompatible
-filetype off
 set fillchars+=vert:\|
+filetype off
 filetype plugin on
+filetype indent on
 
 " leader
 let mapleader = ","
@@ -104,7 +108,12 @@ let g:deoplete#sources#clang#libclang_path = '/usr/lib/libclang.so'
 let g:deoplete#sources#clang#clang_header = '/usr/lib/clang'
 
 " ale
-let g:ale_linters = {'c': [], 'cpp': []}
+let g:ale_linters = {'c': [], 'cpp': [], 'javascript': ['standard']}
+
+" nerdcommenter
+let g:NERDSpaceDelims = 1
+let g:NERDCompactSexyComs = 1
+let g:NERDDefaultAlign = 'left'
 
 " # searching / movement
 " ------------------------------------------------------------------------------
