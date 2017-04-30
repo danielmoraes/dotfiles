@@ -1,5 +1,7 @@
 [options]
-font = DejaVuSansMono 7
+; font = DejaVuSansMono 7
+font = Operator Mono Semi-Light 8
+allow_bold = false
 
 [colors]
 
