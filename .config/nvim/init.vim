@@ -115,6 +115,9 @@ let g:NERDSpaceDelims = 1
 let g:NERDCompactSexyComs = 1
 let g:NERDDefaultAlign = 'left'
 
+" vim-polyglot
+let g:vim_markdown_conceal = 0
+
 " # searching / movement
 " ------------------------------------------------------------------------------
 
