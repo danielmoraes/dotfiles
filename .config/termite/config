@@ -1,7 +1,6 @@
 [options]
-; font = DejaVuSansMono 7
-font = Operator Mono Semi-Light 8
-allow_bold = false
+; font = DejaVuSansMono 9
+font = Operator Mono Semi-Light 10
 
 [colors]
 
