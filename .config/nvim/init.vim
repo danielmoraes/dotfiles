@@ -36,6 +36,10 @@ filetype indent on
 let mapleader = ","
 let maplocalleader = "\\"
 
+" mouse and backspace
+set mouse=a  " on OSX press ALT and click
+set bs=2     " make backspace behave like normal again
+
 " line number
 set relativenumber
 set number
