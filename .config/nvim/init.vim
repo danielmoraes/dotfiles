@@ -6,6 +6,7 @@ call plug#begin('~/.config/nvim/plugged')
 
 Plug 'sheerun/vim-polyglot'
 Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -19,6 +20,7 @@ Plug 'jreybert/vimagit'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'Yggdroot/indentLine'
 Plug 'scrooloose/nerdcommenter'
+Plug 'airblade/vim-gitgutter'
 
 " initialize plugin system
 call plug#end()
