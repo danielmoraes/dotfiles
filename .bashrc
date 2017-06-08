@@ -54,7 +54,8 @@ export LD_LIBRARY_PATH=/usr/local/lib
 export LD_RUN_PATH=/usr/local/lib
 export GOPATH="$HOME/workspace"
 NPM_PACKAGES="${HOME}/.npm-packages"
-export PATH="/home/moraes/app/bin:$GOPATH/bin:$NPM_PACKAGES/bin:$HOME/app/google_appengine/:$PATH"
+RUBY_GEMS="${HOME}/.gem/ruby/2.4.0/bin"
+export PATH="/home/moraes/app/bin:$GOPATH/bin:$NPM_PACKAGES/bin:$HOME/app/google_appengine/:${RUBY_GEMS}:$PATH"
 
 # bash prompt
 PROMPT_USER_COLOR="$(tput bold)$(tput setaf 124)"  # neutral red
