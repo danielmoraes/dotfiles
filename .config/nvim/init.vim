@@ -21,6 +21,9 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'Yggdroot/indentLine'
 Plug 'scrooloose/nerdcommenter'
 Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-abolish'
+Plug 'chrisbra/Colorizer'
+Plug 'godlygeek/tabular'
 
 " initialize plugin system
 call plug#end()
@@ -33,6 +36,9 @@ set fillchars+=vert:\|
 filetype off
 filetype plugin on
 filetype indent on
+
+set foldmethod=syntax
+set foldlevelstart=1
 
 " leader
 let mapleader = ","
