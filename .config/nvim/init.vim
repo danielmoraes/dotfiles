@@ -22,6 +22,7 @@ Plug 'Yggdroot/indentLine'
 Plug 'scrooloose/nerdcommenter'
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-surround'
 Plug 'chrisbra/Colorizer'
 Plug 'godlygeek/tabular'
 
@@ -38,7 +39,7 @@ filetype plugin on
 filetype indent on
 
 set foldmethod=syntax
-set foldlevelstart=1
+set foldlevelstart=20
 
 " leader
 let mapleader = ","
