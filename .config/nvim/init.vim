@@ -6,7 +6,6 @@ call plug#begin('~/.config/nvim/plugged')
 
 Plug 'sheerun/vim-polyglot'
 Plug 'scrooloose/nerdtree'
-Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'vim-airline/vim-airline'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
@@ -25,6 +24,12 @@ Plug 'tpope/vim-abolish'
 Plug 'tpope/vim-surround'
 Plug 'chrisbra/Colorizer'
 Plug 'godlygeek/tabular'
+Plug 'gcmt/taboo.vim'
+Plug 'edkolev/tmuxline.vim'
+Plug 'filipelbc/orgmode.vim'
+Plug 'tpope/vim-speeddating'
+Plug 'ryanoasis/vim-devicons'
+Plug 'Chiel92/vim-autoformat'
 
 " initialize plugin system
 call plug#end()
@@ -34,12 +39,15 @@ call plug#end()
 
 set nocompatible
 set fillchars+=vert:\|
+set encoding=UTF-8
 filetype off
 filetype plugin on
 filetype indent on
 
 set foldmethod=syntax
 set foldlevelstart=20
+
+set clipboard=unnamed
 
 " leader
 let mapleader = ","
@@ -69,7 +77,8 @@ autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
 au InsertLeave * match ExtraWhitespace /\s\+$/
 
 " color scheme
-set background=light
+let bg=$BACKGROUND
+execute "set background=".bg
 let g:gruvbox_italic=1
 colorscheme gruvbox
 
@@ -93,6 +102,18 @@ set shiftwidth=2
 set softtabstop=2
 set expandtab
 set shiftround
+
+" Copy to clipboard
+vnoremap  <leader>y  "+y
+nnoremap  <leader>Y  "+yg_
+nnoremap  <leader>y  "+y
+nnoremap  <leader>yy  "+yy
+
+" Paste from clipboard
+nnoremap <leader>p "+p
+nnoremap <leader>P "+P
+vnoremap <leader>p "+p
+vnoremap <leader>P "+P
 
 " don't move around in insert mode
 inoremap <up> <nop>
@@ -121,7 +142,10 @@ let g:deoplete#sources#clang#libclang_path = '/usr/lib/libclang.so'
 let g:deoplete#sources#clang#clang_header = '/usr/lib/clang'
 
 " ale
-let g:ale_linters = {'c': [], 'cpp': [], 'javascript': ['standard']}
+let g:ale_linters = {'javascript': ['eslint'], 'python': ['flake8']}
+
+" let g:ale_python_flake8_executable = 'python3'
+" let g:ale_python_flake8_options = '-m flake8'
 
 " nerdcommenter
 let g:NERDSpaceDelims = 1
@@ -130,6 +154,16 @@ let g:NERDDefaultAlign = 'left'
 
 " vim-polyglot
 let g:vim_markdown_conceal = 0
+
+let g:tmuxline_powerline_separators = 0
+
+" vim-autoformat
+let g:formatdef_orgformat_org = '"orgformat -"'
+let g:formatters_org = ['orgformat_org']
+
+" indentLine
+let g:indentLine_concealcursor = ''
+let g:indentLine_conceallevel = 2
 
 " # searching / movement
 " ------------------------------------------------------------------------------
@@ -178,3 +212,6 @@ vnoremap <leader>s :!sort<cr>
 
 " nerdtree
 map <F2> :NERDTreeToggle<CR>
+
+" orgmode.vim
+map <leader>h :OrgExportToHTML<cr>
