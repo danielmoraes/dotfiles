@@ -1,8 +1,6 @@
 [options]
-allow_bold = true
-font = Operator Mono Semi-Light 9
-; font = DejaVuSansMono 8
-; font = Fira Code 8
+; font = DejaVuSansMono 9
+font = Operator Mono Semi-Light 10
 
 [colors]
 
