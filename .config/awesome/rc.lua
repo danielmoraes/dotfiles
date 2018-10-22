@@ -48,33 +48,23 @@ end
 
 -- {{{ Variable definitions
 -- @DOC_LOAD_THEME@
--- Themes define colours, icons, font and wallpapers.
+-- Themes define colours, icons, font and wallpapers
 -- beautiful.init(awful.util.get_themes_dir() .. "zenburn/theme.lua")
-beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/gruvbox/theme.lua")
+beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/gruvbox_light/theme.lua")
 
 local gray = "#839496"
 local separators = lain.util.separators
 local markup = lain.util.markup
 
 -- @DOC_DEFAULT_APPLICATIONS@
--- This is used later as the default terminal and editor to run.
-terminal = "xterm"
-editor = os.getenv("EDITOR") or "nano"
-editor_cmd = terminal .. " -e " .. editor
-
--- Default modkey.
--- Usually, Mod4 is the key with a logo between Control and Alt.
--- If you do not like this or do not have such a key,
--- I suggest you to remap Mod4 to another key using xmodmap or other tools.
--- However, you can use another modifier like Mod1, but it may interact with others.
 modkey = "Mod4"
 altkey     = "Mod1"
-terminal   = "termite" or "xterm"
+terminal   = "kitty" or "termite" or "xterm"
 editor     = os.getenv("EDITOR") or "nano" or "vi"
 editor_cmd = terminal .. " -e " .. editor
 
 -- user defined
-browser    = "google-chrome-stable --force-device-scale-factor=1.5"
+browser    = "chromium"
 gui_editor = "gvim"
 graphics   = "gimp"
 
@@ -134,9 +124,13 @@ end
 
 -- {{{ Autostart applications
 run_once("dockerd")
+run_once("dhcpcd")
+run_once("lulinux")
 -- run_once("unclutter -root")
 run_once("redshift -l -22.923952:-47.087875");
-run_once("xrandr --output DP-0 --primary --auto --output DP-4 --auto --rotate left --right-of DP-0 --output HDMI-0 --auto --right-of DP-4");
+run_once("xrandr --output DP-0 --primary --auto --output HDMI-0 --auto --right-of DP-0");
+run_once("xset -dpms")
+run_once("xset s off")
 -- }}}
 
 -- Keyboard map indicator and switcher
@@ -275,13 +269,7 @@ local tasklist_buttons = awful.util.table.join(
 local function set_wallpaper(s)
     -- Wallpaper
     if beautiful.wallpaper then
-        local wallpaper = nil
-
-        if s.index == 2 then
-            wallpaper = beautiful.wallpaper_v
-        else
-            wallpaper = beautiful.wallpaper
-        end
+        local wallpaper = beautiful.wallpaper
 
         -- If wallpaper is a function, call it with the screen
         if type(wallpaper) == "function" then
@@ -300,7 +288,7 @@ awful.screen.connect_for_each_screen(function(s)
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ 1, 2, 3, 4, 5, 6, 7, "web", "apps" }, s, awful.layout.layouts[2])
+    awful.tag({ 1, 2, 3, 4, 5, 6, "repo", "web", "apps" }, s, awful.layout.layouts[2])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -340,9 +328,8 @@ awful.screen.connect_for_each_screen(function(s)
         s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
-            wibox.widget.systray(),
-            myweather,
+            -- wibox.widget.systray(),
+            -- myweather,
             cpuwidget,
             memwidget,
             netwidget,
@@ -363,41 +350,36 @@ globalkeys = awful.util.table.join(
 
 
     -- Chrome bindings
+    -- #1 gmail
     awful.key({ altkey }, "#10", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 /home/moraes/projects/online/clrs/index.html") end),
+        "chromium --force-device-scale-factor=1.0 --app-id=pjkljhegncpnkpknbcohdijeoejaedia") end),
+    -- #2 calendar
     awful.key({ altkey }, "#11", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 /home/moraes/projects/online/clrs/topics.html") end),
-    awful.key({ altkey }, "#87", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=pjkljhegncpnkpknbcohdijeoejaedia") end),
-    awful.key({ altkey }, "#88", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=icppfcnhkcmnfdhfhphakoifcfokfdhg") end),
-    awful.key({ altkey }, "#89", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=ejjicmeblgpmajnghnpcppodonldlgfn") end),
-    awful.key({ altkey }, "#83", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=hipbfijinpcgfogaopmgehiegacbhmob") end),
-    awful.key({ altkey }, "#84", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=bgjohebimpjdhhocbknplfelpmdhifhd") end),
-    awful.key({ altkey }, "#85", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=apdfllckaahabafndbhieahigkjlhalf") end),
-    awful.key({ altkey }, "#79", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=ofccaoklephjdppfkaaahemgohhpmflc") end),
-    awful.key({ altkey }, "#80", function() awful.util.spawn(
-        "google-chrome-stable --force-device-scale-factor=1.5 --app-id=cnkjkdjlofllcpbemipjbcpfnglbgieh") end),
+        "chromium --force-device-scale-factor=1.0 --app-id=ejjicmeblgpmajnghnpcppodonldlgfn") end),
+    -- #3 focusatwill
+    awful.key({ altkey }, "#12", function() awful.util.spawn(
+        "chromium --force-device-scale-factor=1.0 --app-id=ofccaoklephjdppfkaaahemgohhpmflc") end),
+    -- #4 hangouts
+    awful.key({ altkey }, "#13", function() awful.util.spawn(
+        "chromium --force-device-scale-factor=1.0 --app-id=odadmohlkalmmfdgjdlbjdpoekbijhcc") end),
+    -- #5 upwork
+    awful.key({ altkey }, "#14", function() awful.util.spawn(
+        "chromium --force-device-scale-factor=1.0 --app-id=efmdihiccgjeehnfamdjnhhmmhpmnphp") end),
 
     -- PULSEAUDIO control
-    awful.key({ altkey, "Shift" }, "#87",
+    awful.key({ altkey, "Shift" }, "#10",
         function ()
             os.execute("/home/moraes/dev/scripts/pulse_inputs_to_sink 1")
         end),
-    awful.key({ altkey, "Shift" }, "#88",
+    awful.key({ altkey, "Shift" }, "#11",
         function ()
             os.execute("/home/moraes/dev/scripts/pulse_inputs_to_sink 2")
         end),
-    awful.key({ altkey, "Shift" }, "#89",
+    awful.key({ altkey, "Shift" }, "#12",
         function ()
             os.execute("/home/moraes/dev/scripts/pulse_inputs_to_sink 3")
         end),
-    awful.key({ altkey, "Shift" }, "#83",
+    awful.key({ altkey, "Shift" }, "#13",
         function ()
             os.execute("/home/moraes/dev/scripts/pulse_inputs_to_sink 4")
         end),
@@ -408,12 +390,27 @@ globalkeys = awful.util.table.join(
             os.execute(string.format("amixer set %s 1%%+", volumewidget.channel))
             volumewidget.update()
         end),
+    awful.key({ altkey }, "#123",
+        function ()
+            os.execute(string.format("amixer set %s 5%%+", volumewidget.channel))
+            volumewidget.update()
+        end),
     awful.key({ altkey }, "Down",
         function ()
             os.execute(string.format("amixer set %s 1%%-", volumewidget.channel))
             volumewidget.update()
         end),
+    awful.key({ altkey }, "#122",
+        function ()
+            os.execute(string.format("amixer set %s 5%%-", volumewidget.channel))
+            volumewidget.update()
+        end),
     awful.key({ altkey }, "m",
+        function ()
+            os.execute(string.format("amixer set %s toggle", volumewidget.channel))
+            volumewidget.update()
+        end),
+    awful.key({ altkey }, "#121",
         function ()
             os.execute(string.format("amixer set %s toggle", volumewidget.channel))
             volumewidget.update()
@@ -432,10 +429,11 @@ globalkeys = awful.util.table.join(
     -- Copy to clipboard
     awful.key({ modkey }, "c", function () os.execute("xsel -p -o | xsel -i -b") end),
 
+    -- Suspend
+    awful.key({ modkey, "Shift" }, "s", function () os.execute("systemctl suspend -i") end),
+
     -- User programs
     awful.key({ modkey }, "w", function () awful.util.spawn(browser) end),
-    awful.key({ modkey }, "s", function () awful.util.spawn(gui_editor) end),
-    awful.key({ modkey }, "g", function () awful.util.spawn(graphics) end),
     -- }}}
 
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
@@ -488,13 +486,13 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey, "Shift"   }, "q", awesome.quit,
               {description = "quit awesome", group = "awesome"}),
 
-    awful.key({ modkey, "Mod1"    }, "Right", function () awful.tag.incmwfact( 0.01)          end,
+    awful.key({ modkey, "Mod1"    }, "Right", function () awful.tag.incmwfact( 0.05)          end,
               {description = "increase master width factor", group = "layout"}),
-    awful.key({ modkey, "Mod1"    }, "Left",  function () awful.tag.incmwfact(-0.01)          end,
+    awful.key({ modkey, "Mod1"    }, "Left",  function () awful.tag.incmwfact(-0.05)          end,
               {description = "decrease master width factor", group = "layout"}),
-    awful.key({ modkey, "Mod1"    }, "Down",  function () awful.client.incwfact( 0.01)       end,
+    awful.key({ modkey, "Mod1"    }, "Down",  function () awful.client.incwfact( 0.05)       end,
               {description = "increase master width factor", group = "layout"}),
-    awful.key({ modkey, "Mod1"    }, "Up",    function () awful.client.incwfact(-0.01)       end,
+    awful.key({ modkey, "Mod1"    }, "Up",    function () awful.client.incwfact(-0.05)       end,
               {description = "decrease master width factor", group = "layout"}),
     awful.key({ modkey, "Shift"   }, "h",     function () awful.tag.incnmaster( 1, nil, true) end,
               {description = "increase the number of master clients", group = "layout"}),
@@ -684,43 +682,61 @@ awful.rules.rules = {
     { rule = { class = "URxvt" },
       properties = { opacity = 0.99, size_hints_honor = false } },
 
-    { rule = { class = "Google-chrome", instance="google-chrome" },
-      properties = { screen = 1, tag = "web" } },
+    { rule = { class = "Xephyr", instance="Xephyr" },
+      properties = { screen = 2, tag = "1", fullscreen = true } },
+
+    { rule = { class = "Chromium", instance="chromium" },
+      properties = { screen = 1, tag = "web", maximized = false, maximized_vertical = false, maximized_horizontal = false, floating = false } },
+
+    { rule = { class = "Firefox", instance="Navigator" },
+      properties = { screen = 1, tag = "1", maximized = false, floating = false } },
 
     -- gmail
-    { rule = { class = "Google-chrome", instance="crx_pjkljhegncpnkpknbcohdijeoejaedia" },
+    { rule = { class = "Chromium", instance="crx_pjkljhegncpnkpknbcohdijeoejaedia" },
       properties = { screen = 1, tag = "apps" } },
 
     -- play music
-    { rule = { class = "Google-chrome", instance="crx_icppfcnhkcmnfdhfhphakoifcfokfdhg" },
+    { rule = { class = "Chromium", instance="crx_icppfcnhkcmnfdhfhphakoifcfokfdhg" },
       properties = { screen = 1, tag = "apps" } },
 
     -- calendar
-    { rule = { class = "Google-chrome", instance="crx_ejjicmeblgpmajnghnpcppodonldlgfn" },
+    { rule = { class = "Chromium", instance="crx_ejjicmeblgpmajnghnpcppodonldlgfn" },
       properties = { screen = 1, tag = "apps" } },
 
     -- feedly
-    { rule = { class = "Google-chrome", instance="crx_hipbfijinpcgfogaopmgehiegacbhmob" },
+    { rule = { class = "Chromium", instance="crx_hipbfijinpcgfogaopmgehiegacbhmob" },
       properties = { screen = 1, tag = "apps" } },
 
     -- todoist
-    { rule = { class = "Google-chrome", instance="crx_bgjohebimpjdhhocbknplfelpmdhifhd" },
+    { rule = { class = "Chromium", instance="crx_bgjohebimpjdhhocbknplfelpmdhifhd" },
       properties = { screen = 1, tag = "apps" } },
 
     -- google-drive
-    { rule = { class = "Google-chrome", instance="crx_apdfllckaahabafndbhieahigkjlhalf" },
+    { rule = { class = "Chromium", instance="crx_apdfllckaahabafndbhieahigkjlhalf" },
       properties = { screen = 1, tag = "apps" } },
 
     -- hangouts
-    { rule = { class = "Google-chrome", instance="crx_nckgahadagoaajjgafhacjanaoiihapd" },
+    { rule = { class = "Chromium", instance="crx_nckgahadagoaajjgafhacjanaoiihapd" },
       properties = { screen = 1, tag = "apps" } },
 
     -- focusatwill
-    { rule = { class = "Google-chrome", instance="crx_ofccaoklephjdppfkaaahemgohhpmflc" },
+    { rule = { class = "Chromium", instance="crx_ofccaoklephjdppfkaaahemgohhpmflc" },
       properties = { screen = 1, tag = "apps" } },
 
     -- spotify
-    { rule = { class = "Google-chrome", instance="crx_cnkjkdjlofllcpbemipjbcpfnglbgieh" },
+    { rule = { class = "Chromium", instance="crx_cnkjkdjlofllcpbemipjbcpfnglbgieh" },
+      properties = { screen = 1, tag = "apps" } },
+
+    -- skype
+    { rule = { class = "Chromium", instance="crx_lifbcibllhkdhoafpjfnlhfpfgnpldfl" },
+      properties = { screen = 1, tag = "apps" } },
+
+    -- upwork
+    { rule = { class = "Chromium", instance="crx_efmdihiccgjeehnfamdjnhhmmhpmnphp" },
+      properties = { screen = 1, tag = "apps" } },
+
+    -- hangouts
+    { rule = { class = "Chromium", instance="crx_odadmohlkalmmfdgjdlbjdpoekbijhcc" },
       properties = { screen = 1, tag = "apps" } },
 
     { rule = { class = "Gimp", role = "gimp-image-window" },
