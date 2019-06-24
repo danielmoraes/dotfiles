@@ -142,6 +142,8 @@ let g:deoplete#sources#clang#libclang_path = '/usr/lib/libclang.so'
 let g:deoplete#sources#clang#clang_header = '/usr/lib/clang'
 
 " ale
+let g:ale_fixers = ['prettier']
+let g:ale_fix_on_save = 1
 let g:ale_linters = {'javascript': ['eslint'], 'python': ['flake8']}
 
 " let g:ale_python_flake8_executable = 'python3'
@@ -215,3 +217,8 @@ map <F2> :NERDTreeToggle<CR>
 
 " orgmode.vim
 map <leader>h :OrgExportToHTML<cr>
+
+" prettier
+let g:prettier#autoformat = 0
+
+let g:python_recommended_style = 0
