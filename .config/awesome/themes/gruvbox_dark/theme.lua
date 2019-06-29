@@ -3,7 +3,7 @@ local theme = {}
 -- Working directory (where you place this theme)
 theme.wd = "~/.config/awesome/themes/gruvbox_dark/"
 
-theme.font          = "Space Mono 8"
+theme.font          = "Fira Code 8"
 
 theme.bg_normal     = "#282828"
 theme.bg_focus      = "#3c3836"
