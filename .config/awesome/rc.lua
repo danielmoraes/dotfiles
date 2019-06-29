@@ -308,7 +308,7 @@ awful.screen.connect_for_each_screen(function(s)
 
     -- @DOC_WIBAR@
     -- Create the wibox
-    s.mywibox = awful.wibar({ position = "bottom", screen = s })
+    s.mywibox = awful.wibar({ position = "bottom", screen = s, height = 40 })
 
     -- @DOC_SETUP_WIDGETS@
     -- Add widgets to the wibox
