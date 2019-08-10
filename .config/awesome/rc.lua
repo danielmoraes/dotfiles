@@ -64,7 +64,7 @@ editor     = os.getenv("EDITOR") or "nano" or "vi"
 editor_cmd = terminal .. " -e " .. editor
 
 -- user defined
-browser    = "chromium"
+browser    = "chromium --process-per-site"
 gui_editor = "gvim"
 graphics   = "gimp"
 
@@ -352,19 +352,19 @@ globalkeys = awful.util.table.join(
     -- Chrome bindings
     -- #1 gmail
     awful.key({ altkey }, "#10", function() awful.util.spawn(
-        "chromium --force-device-scale-factor=1.0 --app-id=pjkljhegncpnkpknbcohdijeoejaedia") end),
+        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=pjkljhegncpnkpknbcohdijeoejaedia") end),
     -- #2 calendar
     awful.key({ altkey }, "#11", function() awful.util.spawn(
-        "chromium --force-device-scale-factor=1.0 --app-id=ejjicmeblgpmajnghnpcppodonldlgfn") end),
+        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=ejjicmeblgpmajnghnpcppodonldlgfn") end),
     -- #3 focusatwill
     awful.key({ altkey }, "#12", function() awful.util.spawn(
-        "chromium --force-device-scale-factor=1.0 --app-id=ofccaoklephjdppfkaaahemgohhpmflc") end),
+        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=ofccaoklephjdppfkaaahemgohhpmflc") end),
     -- #4 hangouts
     awful.key({ altkey }, "#13", function() awful.util.spawn(
-        "chromium --force-device-scale-factor=1.0 --app-id=odadmohlkalmmfdgjdlbjdpoekbijhcc") end),
+        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=odadmohlkalmmfdgjdlbjdpoekbijhcc") end),
     -- #5 upwork
     awful.key({ altkey }, "#14", function() awful.util.spawn(
-        "chromium --force-device-scale-factor=1.0 --app-id=efmdihiccgjeehnfamdjnhhmmhpmnphp") end),
+        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=efmdihiccgjeehnfamdjnhhmmhpmnphp") end),
 
     -- PULSEAUDIO control
     awful.key({ altkey, "Shift" }, "#10",
