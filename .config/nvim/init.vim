@@ -4,32 +4,32 @@
 " directory for plugins
 call plug#begin('~/.config/nvim/plugged')
 
-Plug 'sheerun/vim-polyglot'
-Plug 'scrooloose/nerdtree'
-Plug 'vim-airline/vim-airline'
+Plug 'airblade/vim-gitgutter'
+Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
+Plug 'Chiel92/vim-autoformat'
+Plug 'chrisbra/Colorizer'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'edkolev/tmuxline.vim'
+Plug 'ervandew/supertab'
+Plug 'filipelbc/orgmode.vim'
+Plug 'gcmt/taboo.vim'
+Plug 'godlygeek/tabular'
+Plug 'jreybert/vimagit'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'morhetz/gruvbox'
-Plug 'w0rp/ale'
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-Plug 'zchee/deoplete-clang'
-Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
-Plug 'ervandew/supertab'
-Plug 'jreybert/vimagit'
-Plug 'editorconfig/editorconfig-vim'
-Plug 'Yggdroot/indentLine'
-Plug 'scrooloose/nerdcommenter'
-Plug 'airblade/vim-gitgutter'
-Plug 'tpope/vim-abolish'
-Plug 'tpope/vim-surround'
-Plug 'chrisbra/Colorizer'
-Plug 'godlygeek/tabular'
-Plug 'gcmt/taboo.vim'
-Plug 'edkolev/tmuxline.vim'
-Plug 'filipelbc/orgmode.vim'
-Plug 'tpope/vim-speeddating'
 Plug 'ryanoasis/vim-devicons'
-Plug 'Chiel92/vim-autoformat'
+Plug 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdtree'
+Plug 'sheerun/vim-polyglot'
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-speeddating'
+Plug 'tpope/vim-surround'
+Plug 'vim-airline/vim-airline'
+Plug 'w0rp/ale'
+Plug 'Yggdroot/indentLine'
+Plug 'zchee/deoplete-clang'
 
 " initialize plugin system
 call plug#end()
@@ -131,6 +131,9 @@ augroup line_return
 augroup END
 
 " deoplete
+call deoplete#custom#option('sources', {
+\ '_': ['ale'],
+\})
 let g:deoplete#enable_at_startup = 1
 let g:tern_request_timeout = 1
 let g:tern_show_signature_in_pum = '0' " disable full signature type
@@ -143,8 +146,10 @@ let g:deoplete#sources#clang#clang_header = '/usr/lib/clang'
 
 " ale
 let g:ale_fixers = ['prettier']
-let g:ale_fix_on_save = 1
-let g:ale_linters = {'javascript': ['eslint'], 'python': ['flake8']}
+" let g:ale_fix_on_save = 1
+let g:ale_linters = {'javascript': ['eslint'], 'typescript': ['eslint', 'tslint', 'tsserver'], 'python': ['flake8']}
+let g:ale_completion_enabled = 1
+let g:ale_set_ballons = 1
 
 " let g:ale_python_flake8_executable = 'python3'
 " let g:ale_python_flake8_options = '-m flake8'
@@ -166,6 +171,16 @@ let g:formatters_org = ['orgformat_org']
 " indentLine
 let g:indentLine_concealcursor = ''
 let g:indentLine_conceallevel = 2
+
+" prettier
+let g:prettier#autoformat = 1
+let g:python_recommended_style = 0
+
+" youcompleteme
+if !exists("g:ycm_semantic_triggers")
+  let g:ycm_semantic_triggers = {}
+endif
+let g:ycm_semantic_triggers['typescript'] = ['.']
 
 " # searching / movement
 " ------------------------------------------------------------------------------
@@ -218,7 +233,3 @@ map <F2> :NERDTreeToggle<CR>
 " orgmode.vim
 map <leader>h :OrgExportToHTML<cr>
 
-" prettier
-let g:prettier#autoformat = 0
-
-let g:python_recommended_style = 0
