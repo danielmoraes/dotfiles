@@ -12,7 +12,7 @@ Xft.rgba: rgb
 ! URxvt
 !
 ! URxvt*perl-ext-common: ...,tabbedex,...
-URxvt*font:  xft:DejaVuSansMono:size=7
+URxvt*font:  xft:Fira Code:size=9
 URxvt*depth: 32
 URxvt*saveLines: 10000
 URxvt*scrollBar: false
@@ -35,7 +35,7 @@ URxvt*tabbed.autohide: true
 !
 ! Light
 !
-#define S_base03        #fdf6e3
+#define S_base03        #fbf1c7
 #define S_base02        #eee8d5
 #define S_base01        #93a1a1
 #define S_base00        #839496

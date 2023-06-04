@@ -5,31 +5,47 @@
 call plug#begin('~/.config/nvim/plugged')
 
 Plug 'airblade/vim-gitgutter'
-Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
 Plug 'Chiel92/vim-autoformat'
 Plug 'chrisbra/Colorizer'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'edkolev/tmuxline.vim'
+Plug 'edluffy/hologram.nvim', {'branch': 'main'}
 Plug 'ervandew/supertab'
 Plug 'filipelbc/orgmode.vim'
 Plug 'gcmt/taboo.vim'
 Plug 'godlygeek/tabular'
+Plug 'guns/vim-sexp',    {'for': 'clojure'}
 Plug 'jreybert/vimagit'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+Plug 'liquidz/vim-iced', {'for': 'clojure', 'branch': 'main'}
+Plug 'matze/vim-move'
 Plug 'morhetz/gruvbox'
+Plug 'nvim-neorg/neorg' | Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-treesitter/nvim-treesitter'
 Plug 'ryanoasis/vim-devicons'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'sheerun/vim-polyglot'
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-fireplace'
+Plug 'tpope/vim-salve'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-surround'
 Plug 'vim-airline/vim-airline'
 Plug 'w0rp/ale'
 Plug 'Yggdroot/indentLine'
-Plug 'zchee/deoplete-clang'
+Plug 'nvim-neorg/neorg' | Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+" Plug 'carlitux/deoplete-ternjs', { 'do': 'npm install -g tern' }
+" Plug 'jceb/vim-orgmode'
+" Plug 'kristijanhusak/orgmode.nvim'
+" Plug 'leafgarland/typescript-vim'
+" Plug 'mg979/vim-visual-multi', {'branch': 'master'}
+" Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+" Plug 'zchee/deoplete-clang'
 
 " initialize plugin system
 call plug#end()
@@ -131,28 +147,29 @@ augroup line_return
 augroup END
 
 " deoplete
-call deoplete#custom#option('sources', {
-\ '_': ['ale'],
-\})
-let g:deoplete#enable_at_startup = 1
-let g:tern_request_timeout = 1
-let g:tern_show_signature_in_pum = '0' " disable full signature type
-let g:tern#command = ["tern"]
-let g:tern#arguments = ["--persistent"]
-let g:tern#filetypes = ['jsx', 'javascript.jsx', 'vue']
-set completeopt-=preview
-let g:deoplete#sources#clang#libclang_path = '/usr/lib/libclang.so'
-let g:deoplete#sources#clang#clang_header = '/usr/lib/clang'
+" call deoplete#custom#option('sources', {
+" \ '_': ['ale'],
+" \})
+" let g:deoplete#enable_at_startup = 1
+" let g:tern_request_timeout = 1
+" let g:tern_show_signature_in_pum = '0' " disable full signature type
+" let g:tern#command = ["tern"]
+" let g:tern#arguments = ["--persistent"]
+" let g:tern#filetypes = ['jsx', 'javascript.jsx', 'vue']
+" set completeopt-=preview
+" let g:deoplete#sources#clang#libclang_path = '/usr/lib/libclang.so'
+" let g:deoplete#sources#clang#clang_header = '/usr/lib/clang'
 
 " ale
-let g:ale_fixers = ['prettier']
-" let g:ale_fix_on_save = 1
-let g:ale_linters = {'javascript': ['eslint'], 'typescript': ['eslint', 'tslint', 'tsserver'], 'python': ['flake8']}
-let g:ale_completion_enabled = 1
+let g:ale_fixers = {'javascript': ['prettier', 'prettier_standard'], 'javascriptreact': ['prettier_standard', 'prettier'], 'typescript': ['prettier_standard', 'prettier'], 'typescriptreact': ['prettier_standard', 'prettier'], 'python': ['black']}
+let g:ale_linters = {'javascript': ['eslint', 'tsserver'], 'javascriptreact': ['eslint', 'tsserver'], 'typescript': ['eslint', 'tsserver'], 'typescriptreact': ['eslint', 'tsserver'], 'python': ['flake8', 'black']}
+let g:ale_python_black_change_directory = 1
+" let g:ale_completion_enabled = 1
+let g:ale_fix_on_save = 1
 let g:ale_set_ballons = 1
 
-" let g:ale_python_flake8_executable = 'python3'
-" let g:ale_python_flake8_options = '-m flake8'
+let g:ale_python_flake8_executable = 'python3'
+let g:ale_python_flake8_options = '-m flake8'
 
 " nerdcommenter
 let g:NERDSpaceDelims = 1
@@ -181,6 +198,31 @@ if !exists("g:ycm_semantic_triggers")
   let g:ycm_semantic_triggers = {}
 endif
 let g:ycm_semantic_triggers['typescript'] = ['.']
+
+" clojure
+let g:clojure_fold = 1
+let g:clojure_syntax_keywords = {
+    \   'clojureMacro': ["defproject", "defcustom"],
+    \   'clojureFunc': ["string/join", "string/replace"]
+    \ }
+
+" neorg
+lua << EOF
+require('neorg').setup {
+    load = {
+        ["core.defaults"] = {}
+    }
+}
+EOF
+
+lua << EOF
+require('nvim-treesitter.configs').setup {
+    ensure_installed = { "norg", "javascript", "markdown" },
+    highlight = { -- Be sure to enable highlights if you haven't!
+        enable = true,
+    }
+}
+EOF
 
 " # searching / movement
 " ------------------------------------------------------------------------------
@@ -233,3 +275,22 @@ map <F2> :NERDTreeToggle<CR>
 " orgmode.vim
 map <leader>h :OrgExportToHTML<cr>
 
+lua << EOF
+    require('neorg').setup {
+        -- Tell Neorg what modules to load
+        load = {
+            ["core.defaults"] = {}, -- Load all the default modules
+            ["core.norg.concealer"] = {}, -- Allows for use of icons
+            ["core.norg.dirman"] = { -- Manage your directories with Neorg
+                config = {
+                    workspaces = {
+                        my_workspace = "~/neorg"
+                    }
+                }
+            }
+        },
+    }
+EOF
+
+set conceallevel=2
+let g:vim_markdown_conceal=1

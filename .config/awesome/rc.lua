@@ -59,12 +59,12 @@ local markup = lain.util.markup
 -- @DOC_DEFAULT_APPLICATIONS@
 modkey = "Mod4"
 altkey     = "Mod1"
-terminal   = "kitty" or "termite" or "xterm"
+terminal   = "alacritty" or "termite" or "xterm"
 editor     = os.getenv("EDITOR") or "nano" or "vi"
 editor_cmd = terminal .. " -e " .. editor
 
 -- user defined
-browser    = "chromium --process-per-site"
+browser    = "google-chrome-stable --process-per-site"
 gui_editor = "gvim"
 graphics   = "gimp"
 
@@ -131,6 +131,8 @@ run_once("redshift -l -22.923952:-47.087875");
 run_once("xrandr --output DP-0 --primary --auto --output HDMI-0 --auto --right-of DP-0");
 run_once("xset -dpms")
 run_once("xset s off")
+run_once("rclone mount dropbox: /home/moraes/cloud/dropbox/ &")
+run_once("rclone mount google-drive: /home/moraes/cloud/google-drive/ &")
 -- }}}
 
 -- Keyboard map indicator and switcher
@@ -282,13 +284,50 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
+local tasklist_template = {
+    {
+        {
+            {
+                {
+                    id     = 'icon_role',
+                    widget = wibox.widget.imagebox,
+                },
+                id      = "icon_margin_role",
+                top     = 4,
+                bottom  = 4,
+                right   = 4,
+                left    = 8,
+                widget = wibox.container.margin
+            },
+            {
+                {
+                    id     = "text_role",
+                    widget = wibox.widget.textbox,
+                },
+                id     = "text_margin_role",
+                top    = 8,
+                bottom = 8,
+                right  = 4,
+                left   = 4,
+                widget = wibox.container.margin
+            },
+            --fill_space = true,
+            layout     = wibox.layout.fixed.horizontal
+        },
+        expand = "outside",
+        layout = wibox.layout.align.horizontal,
+    },
+    id     = "background_role",
+    widget = wibox.container.background
+}
+
 -- @DOC_FOR_EACH_SCREEN@
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
 
     -- Each screen has its own tag table.
-    awful.tag({ 1, 2, 3, 4, 5, 6, "repo", "web", "apps" }, s, awful.layout.layouts[2])
+    awful.tag({ 1, 2, 3, 4, 5, "test", "meet", "web", "apps" }, s, awful.layout.layouts[2])
 
     -- Create a promptbox for each screen
     s.mypromptbox = awful.widget.prompt()
@@ -304,7 +343,12 @@ awful.screen.connect_for_each_screen(function(s)
     s.mytaglist = awful.widget.taglist(s, awful.widget.taglist.filter.all, taglist_buttons)
 
     -- Create a tasklist widget
-    s.mytasklist = awful.widget.tasklist(s, awful.widget.tasklist.filter.currenttags, tasklist_buttons)
+    s.mytasklist = awful.widget.tasklist {
+        screen          = s,
+        filter          = awful.widget.tasklist.filter.currenttags,
+        buttons         = tasklist_buttons,
+        widget_template = tasklist_template
+    }
 
     -- @DOC_WIBAR@
     -- Create the wibox
@@ -347,24 +391,22 @@ globalkeys = awful.util.table.join(
     -- {{{ Custom binds
     awful.key({ altkey }, "p", function() os.execute("/home/moraes/app/bin/screenshot") end),
     awful.key({ modkey }, "p", function() os.execute("feh /home/moraes/media/img/wallpapers/howtogetmotivated-3840x2160.png &") end),
-
-
     -- Chrome bindings
     -- #1 gmail
-    awful.key({ altkey }, "#10", function() awful.util.spawn(
-        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=pjkljhegncpnkpknbcohdijeoejaedia") end),
-    -- #2 calendar
+    awful.key({ modkey }, "k", function() awful.util.spawn(
+        "chrome --process-per-site --force-device-scale-factor=1.0 --app-id=pjkljhegncpnkpknbcohdijeoejaedia") end),
+    -- #2 slack
     awful.key({ altkey }, "#11", function() awful.util.spawn(
-        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=ejjicmeblgpmajnghnpcppodonldlgfn") end),
+        "chrome --process-per-site --force-device-scale-factor=1.0 --app-id=jeogkiiogjbmhklcnbgkdcjoioegiknm") end),
     -- #3 focusatwill
     awful.key({ altkey }, "#12", function() awful.util.spawn(
-        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=ofccaoklephjdppfkaaahemgohhpmflc") end),
+        "chrome --process-per-site --force-device-scale-factor=1.0 --app-id=ofccaoklephjdppfkaaahemgohhpmflc") end),
     -- #4 hangouts
     awful.key({ altkey }, "#13", function() awful.util.spawn(
-        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=odadmohlkalmmfdgjdlbjdpoekbijhcc") end),
+        "chrome --process-per-site --force-device-scale-factor=1.0 --app-id=odadmohlkalmmfdgjdlbjdpoekbijhcc") end),
     -- #5 upwork
     awful.key({ altkey }, "#14", function() awful.util.spawn(
-        "chromium --process-per-site --force-device-scale-factor=1.0 --app-id=efmdihiccgjeehnfamdjnhhmmhpmnphp") end),
+        "chrome --process-per-site --force-device-scale-factor=1.0 --app-id=efmdihiccgjeehnfamdjnhhmmhpmnphp") end),
 
     -- PULSEAUDIO control
     awful.key({ altkey, "Shift" }, "#10",
@@ -685,59 +727,72 @@ awful.rules.rules = {
     { rule = { class = "Xephyr", instance="Xephyr" },
       properties = { screen = 2, tag = "1", fullscreen = true } },
 
-    { rule = { class = "Chromium", instance="chromium" },
+    { rule = { class = "Google-chrome", instance="chrome" },
       properties = { screen = 1, tag = "web", maximized = false, maximized_vertical = false, maximized_horizontal = false, floating = false } },
 
     { rule = { class = "Firefox", instance="Navigator" },
       properties = { screen = 1, tag = "1", maximized = false, floating = false } },
 
     -- gmail
-    { rule = { class = "Chromium", instance="crx_pjkljhegncpnkpknbcohdijeoejaedia" },
+    { rule = { class = "Google-chrome", instance="crx_pjkljhegncpnkpknbcohdijeoejaedia" },
       properties = { screen = 1, tag = "apps" } },
 
-    -- play music
-    { rule = { class = "Chromium", instance="crx_icppfcnhkcmnfdhfhphakoifcfokfdhg" },
+    -- amazon music
+    { rule = { class = "Google-chrome", instance="crx_cfkfgcfgfpgmkogcnibdjcckkpdiajgp" },
       properties = { screen = 1, tag = "apps" } },
 
     -- calendar
-    { rule = { class = "Chromium", instance="crx_ejjicmeblgpmajnghnpcppodonldlgfn" },
+    { rule = { class = "Google-chrome", instance="crx_ejjicmeblgpmajnghnpcppodonldlgfn" },
       properties = { screen = 1, tag = "apps" } },
 
     -- feedly
-    { rule = { class = "Chromium", instance="crx_hipbfijinpcgfogaopmgehiegacbhmob" },
+    { rule = { class = "Google-chrome", instance="crx_hipbfijinpcgfogaopmgehiegacbhmob" },
       properties = { screen = 1, tag = "apps" } },
 
     -- todoist
-    { rule = { class = "Chromium", instance="crx_bgjohebimpjdhhocbknplfelpmdhifhd" },
+    { rule = { class = "Google-chrome", instance="crx_bgjohebimpjdhhocbknplfelpmdhifhd" },
       properties = { screen = 1, tag = "apps" } },
 
     -- google-drive
-    { rule = { class = "Chromium", instance="crx_apdfllckaahabafndbhieahigkjlhalf" },
+    { rule = { class = "Google-chrome", instance="crx_apdfllckaahabafndbhieahigkjlhalf" },
       properties = { screen = 1, tag = "apps" } },
 
     -- hangouts
-    { rule = { class = "Chromium", instance="crx_nckgahadagoaajjgafhacjanaoiihapd" },
+    { rule = { class = "Google-chrome", instance="crx_nckgahadagoaajjgafhacjanaoiihapd" },
       properties = { screen = 1, tag = "apps" } },
 
     -- focusatwill
-    { rule = { class = "Chromium", instance="crx_ofccaoklephjdppfkaaahemgohhpmflc" },
+    { rule = { class = "Google-chrome", instance="crx_ofccaoklephjdppfkaaahemgohhpmflc" },
       properties = { screen = 1, tag = "apps" } },
 
     -- spotify
-    { rule = { class = "Chromium", instance="crx_cnkjkdjlofllcpbemipjbcpfnglbgieh" },
+    { rule = { class = "Google-chrome", instance="crx_cnkjkdjlofllcpbemipjbcpfnglbgieh" },
       properties = { screen = 1, tag = "apps" } },
 
     -- skype
-    { rule = { class = "Chromium", instance="crx_lifbcibllhkdhoafpjfnlhfpfgnpldfl" },
+    { rule = { class = "Google-chrome", instance="crx_lifbcibllhkdhoafpjfnlhfpfgnpldfl" },
       properties = { screen = 1, tag = "apps" } },
 
     -- upwork
-    { rule = { class = "Chromium", instance="crx_efmdihiccgjeehnfamdjnhhmmhpmnphp" },
+    { rule = { class = "Google-chrome", instance="crx_efmdihiccgjeehnfamdjnhhmmhpmnphp" },
       properties = { screen = 1, tag = "apps" } },
 
     -- hangouts
-    { rule = { class = "Chromium", instance="crx_odadmohlkalmmfdgjdlbjdpoekbijhcc" },
+    { rule = { class = "Google-chrome", instance="crx_odadmohlkalmmfdgjdlbjdpoekbijhcc" },
       properties = { screen = 1, tag = "apps" } },
+
+    -- slack
+    { rule = { class = "Google-chrome", instance="crx_jeogkiiogjbmhklcnbgkdcjoioegiknm" },
+      properties = { screen = 1, tag = "apps" } },
+
+    { rule = { instance = "google-chrome (/home/moraes/.config/Cypress/cy/production/browsers/chrome-stable/interactive)" },
+      properties = { screen = 1, tag = "test", maximized = false, maximized_vertical = false, maximized_horizontal = false, floating = false } },
+
+    { rule = { class = "Cypress", instance = "cypress" },
+      properties = { screen = 1, tag = "test", maximized = false, maximized_vertical = false, maximized_horizontal = false, floating = false } },
+
+    { rule = { class = "zoom", instance = "zoom" },
+      properties = { screen = 1, tag = "meet", maximized = false, maximized_vertical = false, maximized_horizontal = false, floating = false } },
 
     { rule = { class = "Gimp", role = "gimp-image-window" },
       properties = { maximized_horizontal = true,

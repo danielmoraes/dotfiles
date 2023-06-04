@@ -1,0 +1,23 @@
+{
+	"folders": [
+		{
+			"name": "me",
+			"path": "dev/projects/me"
+		},
+		{
+			"name": "clients",
+			"path": "dev/projects/clients"
+		},
+		{
+			"name": "devord",
+			"path": "dev/projects/devord"
+		},
+		{
+			"name": "hoobox",
+			"path": "dev/projects/hoobox"
+		},
+		{
+			"path": "dev/interview"
+		}
+	]
+}
