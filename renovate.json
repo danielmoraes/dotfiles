@@ -38,6 +38,13 @@
       "automerge": true
     },
     {
+      "description": "Hold pnpm majors until opted into by hand. 11.18.0's standalone binary (@pnpm/macos-arm64, @pnpm/linux-x64) is published without the dist/ it loads, so `pnpm install` dies with ENOENT locally — while CI stays green, because pnpm/action-setup installs the complete npm package instead. CI cannot catch this class of break, so it must not automerge.",
+      "matchDepTypes": ["packageManager"],
+      "matchPackageNames": ["pnpm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "description": "Never automerge major updates.",
       "matchUpdateTypes": ["major"],
       "automerge": false
