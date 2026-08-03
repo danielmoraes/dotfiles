@@ -13,7 +13,8 @@
     "test": "vp test --run"
   },
   "dependencies": {
-    "@elgato/streamdeck": "catalog:"
+    "@elgato/streamdeck": "catalog:",
+    "streamdeck-secrets": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

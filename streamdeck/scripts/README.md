@@ -31,6 +31,7 @@ src/
 | `sd-meeting-mode`          | Toggle meeting mode (pause music + Focus/mic Shortcut)                       |
 | `sd-quick-capture`         | Prompt and append to inbox, or open a GitHub issue                           |
 | `sd-standup`               | Copy a summary of merged PRs since yesterday to the clipboard                |
+| `sd-slack-status`          | Cycle Slack status (available / focus / lunch / clear), or set one by name   |
 
 ## Develop
 
@@ -45,9 +46,14 @@ pnpm run build        # tsdown -> bin/<name>.js (executable, node shebang)
 `~/.local/bin` as `sd-<name>`. Stream Deck keys use a **System → Open** action
 pointing at the `sd-<name>` executable.
 
-Config is read from the environment (populate `~/.config/streamdeck/secrets.env`,
-which `install.sh` scaffolds): `STREAMDECK_TERMINAL`, `STREAMDECK_DEFAULT_REPO`,
+Config comes from `~/.config/streamdeck/secrets.env` (scaffolded by
+`install.sh`): `STREAMDECK_TERMINAL`, `STREAMDECK_DEFAULT_REPO`,
 `STREAMDECK_INBOX`, `STREAMDECK_FOCUS_PLAYLIST`, `SLACK_TOKEN`.
+
+`realCtx()` loads that file itself via [`../secrets/`](../secrets/src/index.ts).
+Keys invoke these commands through the Stream Deck app, which passes the _login_
+environment rather than a shell's — so anything exported from a shell rc is
+invisible here and the tokens have to be read off disk.
 
 The compiled `bin/` is a git-ignored build artifact — run `pnpm run build`
 (or `install.sh`) after cloning.

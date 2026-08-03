@@ -3,6 +3,7 @@ import streamDeck, {
   type KeyDownEvent,
   type WillAppearEvent,
 } from "@elgato/streamdeck"
+import { githubToken } from "streamdeck-secrets"
 import { type Conclusion, latestRunConclusion } from "../github"
 
 export type CiStatusSettings = {
@@ -27,7 +28,7 @@ const LABEL: Record<Conclusion, string> = {
  * this action's UUID in manifest.json (see SearchCount for the rationale).
  */
 export class CiStatus extends SingletonAction<CiStatusSettings> {
-  override manifestId = "org.dmoraes.github-stats.ci-status"
+  override manifestId = "com.dmoraes.github-stats.ci-status"
 
   override onWillAppear(ev: WillAppearEvent<CiStatusSettings>): Promise<void> {
     return this.refresh(ev.action, ev.payload.settings)
@@ -49,7 +50,7 @@ export class CiStatus extends SingletonAction<CiStatusSettings> {
       await action.setTitle("set repo")
       return
     }
-    const token = settings.token ?? process.env.GITHUB_TOKEN
+    const token = settings.token || githubToken()
     try {
       const c = await latestRunConclusion(repo, settings.branch ?? "main", {
         apiBase: settings.apiBase,

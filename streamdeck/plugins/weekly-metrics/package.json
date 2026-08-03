@@ -1,0 +1,30 @@
+{
+  "name": "weekly-metrics",
+  "version": "0.1.0",
+  "description": "Stream Deck plugin: weekly coding hours, PRs merged, commits and meetings",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check": "vp check",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "typecheck": "tsc --noEmit",
+    "test": "vp test --run"
+  },
+  "dependencies": {
+    "@elgato/streamdeck": "catalog:",
+    "streamdeck-secrets": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/ws": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:",
+    "ws": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

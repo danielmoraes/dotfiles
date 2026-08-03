@@ -78,7 +78,7 @@ async function runPluginWillAppear({
   actionUUID: string
   settings: unknown
 }): Promise<string> {
-  const pluginUUID = "org.dmoraes.github-stats"
+  const pluginUUID = "com.dmoraes.github-stats"
   const wss = new WebSocketServer({ host: "127.0.0.1", port: 0 })
   await once(wss, "listening")
   const port = portOf(wss)
@@ -170,7 +170,7 @@ test("registration handshake + willAppear -> setTitle shows the PR count", async
   )
   try {
     const title = await runPluginWillAppear({
-      actionUUID: "org.dmoraes.github-stats.search-count",
+      actionUUID: "com.dmoraes.github-stats.search-count",
       settings: {
         query: "is:open is:pr review-requested:@me",
         apiBase: gh.url,
@@ -191,7 +191,7 @@ test("CI status action maps a successful run to 'OK'", async () => {
   )
   try {
     const title = await runPluginWillAppear({
-      actionUUID: "org.dmoraes.github-stats.ci-status",
+      actionUUID: "com.dmoraes.github-stats.ci-status",
       settings: {
         repo: "danielmoraes/dotfiles",
         branch: "main",
@@ -208,7 +208,7 @@ test("a failing GitHub API surfaces '!' rather than crashing the plugin", async 
   const gh = await startMockGitHub(() => null)
   try {
     const title = await runPluginWillAppear({
-      actionUUID: "org.dmoraes.github-stats.search-count",
+      actionUUID: "com.dmoraes.github-stats.search-count",
       settings: { query: "x", apiBase: gh.url },
     })
     expect(title).toBe("!")

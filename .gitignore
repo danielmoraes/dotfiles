@@ -16,6 +16,10 @@ streamdeck/plugins/*/dist/
 # Compiled plugin code + SDK runtime logs (build artifacts)
 streamdeck/plugins/*/*.sdPlugin/bin/
 streamdeck/plugins/*/*.sdPlugin/logs/
+# Generated PNG plugin icons (streamdeck/icons rebuilds them; the SVGs beside
+# them are hand-authored and ARE tracked)
+streamdeck/plugins/*/*.sdPlugin/imgs/plugin/icon.png
+streamdeck/plugins/*/*.sdPlugin/imgs/plugin/icon@2x.png
 # Compiled glue commands (build artifact; install.sh rebuilds them)
 streamdeck/scripts/bin/
 # Toolchain caches (vite-plus / turbo / tsdown / vitest)

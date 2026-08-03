@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Slack Unread",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "UUID": "com.dmoraes.slack-unread",
+  "Description": "Show unread Slack mentions/DMs on a Stream Deck key.",
+  "Category": "Slack Unread",
+  "CategoryIcon": "imgs/plugin/category",
+  "Icon": "imgs/plugin/icon",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": { "MinimumVersion": "6.9" },
+  "OS": [
+    { "Platform": "mac", "MinimumVersion": "12" },
+    { "Platform": "windows", "MinimumVersion": "10" }
+  ],
+  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "Unread Count",
+      "UUID": "com.dmoraes.slack-unread.unread-count",
+      "Icon": "imgs/actions/unread-count/icon",
+      "Tooltip": "Show unread Slack mentions/DMs. Press to open Slack.",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/unread-count/key",
+          "TitleAlignment": "middle"
+        },
+        {
+          "Image": "imgs/actions/unread-count/key-alert",
+          "TitleAlignment": "middle"
+        }
+      ]
+    }
+  ]
+}

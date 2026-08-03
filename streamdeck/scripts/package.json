@@ -12,6 +12,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vp test --run"
   },
+  "dependencies": {
+    "streamdeck-secrets": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "catalog:",
     "tsdown": "catalog:",

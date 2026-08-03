@@ -18,13 +18,7 @@
   "packageRules": [
     {
       "description": "Group the shared toolchain (catalog) into one PR.",
-      "matchPackageNames": [
-        "vite-plus",
-        "tsdown",
-        "typescript",
-        "oxlint",
-        "oxfmt"
-      ],
+      "matchPackageNames": ["vite-plus", "tsdown", "typescript", "oxlint", "oxfmt"],
       "groupName": "toolchain"
     },
     {

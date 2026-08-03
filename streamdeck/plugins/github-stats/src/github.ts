@@ -27,8 +27,15 @@ export type GitHubOptions = {
 
 const DEFAULT_BASE = "https://api.github.com"
 
+/**
+ * Requests are bounded: a hung connection would otherwise leave the key blank
+ * forever — `render` awaits this, so not even the `!` error state would paint.
+ */
+const FETCH_TIMEOUT_MS = 10_000
+
 const defaultFetch: FetchLike = async (url, init) => {
-  const res = await fetch(url, init)
+  const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS)
+  const res = await fetch(url, { ...init, signal })
   return { ok: res.ok, status: res.status, json: () => res.json() }
 }
 
