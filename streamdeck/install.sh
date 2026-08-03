@@ -118,6 +118,8 @@ if [[ ! -f "$SECRETS" ]]; then
 GITHUB_TOKEN=
 # Only needed by weekly-metrics' `commits` metric (commit search has no @me).
 GITHUB_LOGIN=
+# Only for sd-slack-status / sd-focus-mode; the unread key reads Slack's
+# local state file and needs no token.
 SLACK_TOKEN=
 WAKATIME_API_KEY=
 JIRA_BASE_URL=

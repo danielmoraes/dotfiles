@@ -1,72 +1,129 @@
 import { expect, test } from "vite-plus/test"
-import { countState, type FetchLike, selectCount, unreadCounts } from "./slack"
+import {
+  type ReadFile,
+  countState,
+  formatTitle,
+  parseUnread,
+  selectCount,
+  unreadCounts,
+} from "./slack"
 
-/** Build a fake fetch that returns `body` and records the URL it was called with. */
-function fakeFetch(
-  body: unknown,
-  { ok = true, status = 200 }: { ok?: boolean; status?: number } = {},
-) {
-  const calls: string[] = []
-  const impl: FetchLike = async (url) => {
-    calls.push(url)
-    return { ok, status, json: async () => body }
-  }
-  return { impl, calls }
-}
-
-const FULL = {
-  ok: true,
-  channels: [{ mention_count: 2 }, { mention_count: 1 }],
-  groups: [{ mention_count: 3 }],
-  mpims: [{ mention_count: 1 }],
-  ims: [{ dm_count: 4 }, { dm_count: 1 }],
-  threads: { mention_count: 2 },
-}
-
-test("unreadCounts splits DMs, mentions and threads", async () => {
-  const { impl, calls } = fakeFetch(FULL)
-  const unread = await unreadCounts({
-    apiBase: "https://example.test",
-    fetchImpl: impl,
-  })
-  expect(unread).toEqual({ dms: 5, mentions: 7, threads: 2, total: 14 })
-  expect(calls[0]).toBe("https://example.test/users.counts?mpim_aware=true")
+/**
+ * The shape Slack's desktop app actually persists, trimmed to the keys we read.
+ * Captured from a real `~/Library/Application Support/Slack/storage/root-state.json`.
+ */
+const STATE = JSON.stringify({
+  settings: { irrelevant: true },
+  webapp: {
+    teams: {
+      T4BB7S7HP: {
+        unreads: { unreads: 0, unreadHighlights: 0, showBullet: false },
+      },
+      T8TM982US: {
+        unreads: { unreads: 3, unreadHighlights: 1, showBullet: true },
+      },
+      T01GCL1ER2N: {
+        unreads: { unreads: 2, unreadHighlights: 0, showBullet: true },
+      },
+    },
+  },
 })
 
-test("unreadCounts tolerates missing and malformed sections", async () => {
-  const { impl } = fakeFetch({ ok: true, ims: [{}, { dm_count: "x" }] })
-  expect(await unreadCounts({ fetchImpl: impl })).toEqual({
-    dms: 0,
-    mentions: 0,
-    threads: 0,
-    total: 0,
+test("parseUnread sums the badge across workspaces", () => {
+  expect(parseUnread(STATE)).toEqual({
+    unreads: 5,
+    highlights: 1,
+    bullet: true,
+    workspaces: 3,
   })
 })
 
-test("unreadCounts throws on transport failure", async () => {
-  const { impl } = fakeFetch({}, { ok: false, status: 429 })
-  await expect(unreadCounts({ fetchImpl: impl })).rejects.toThrow(/HTTP 429/)
+test("parseUnread can restrict to specific workspaces", () => {
+  expect(parseUnread(STATE, ["T8TM982US"])).toEqual({
+    unreads: 3,
+    highlights: 1,
+    bullet: true,
+    workspaces: 1,
+  })
+  // A workspace with nothing unread contributes no bullet.
+  expect(parseUnread(STATE, ["T4BB7S7HP"]).bullet).toBe(false)
 })
 
-test("unreadCounts throws on a Slack-level error body", async () => {
-  const { impl } = fakeFetch({ ok: false, error: "invalid_auth" })
-  await expect(unreadCounts({ fetchImpl: impl })).rejects.toThrow(
-    /invalid_auth/,
+test("parseUnread tolerates missing or malformed workspace entries", () => {
+  const messy = JSON.stringify({
+    webapp: {
+      teams: {
+        GOOD: { unreads: { unreads: 4 } },
+        NO_UNREADS: { something: 1 },
+        NOT_AN_OBJECT: "nope",
+      },
+    },
+  })
+  expect(parseUnread(messy)).toEqual({
+    unreads: 4,
+    highlights: 0,
+    bullet: false,
+    workspaces: 1,
+  })
+})
+
+test("parseUnread rejects a file it can't make sense of", () => {
+  // Failing loudly matters: a Slack update reshaping this file must surface as
+  // an error on the key, never as a confident zero.
+  expect(() => parseUnread("not json")).toThrow(/not valid JSON/)
+  expect(() => parseUnread("{}")).toThrow(/unexpected shape/)
+  expect(() => parseUnread('{"webapp":{}}')).toThrow(/no workspaces/)
+  expect(() => parseUnread('{"webapp":{"teams":{}}}')).toThrow(
+    /no readable workspaces/,
   )
 })
 
-test("selectCount defaults to the total when nothing is selected", () => {
-  const unread = { dms: 5, mentions: 7, threads: 2, total: 14 }
-  expect(selectCount(unread)).toBe(14)
-  expect(selectCount(unread, {})).toBe(14)
-  expect(selectCount(unread, { dms: false })).toBe(14)
+test("unreadCounts reads the state file from the given path", () => {
+  const seen: string[] = []
+  const readFileImpl: ReadFile = (path) => {
+    seen.push(path)
+    return STATE
+  }
+  expect(unreadCounts({ path: "/tmp/state.json", readFileImpl }).unreads).toBe(
+    5,
+  )
+  expect(seen).toEqual(["/tmp/state.json"])
 })
 
-test("selectCount adds only the enabled parts", () => {
-  const unread = { dms: 5, mentions: 7, threads: 2, total: 14 }
-  expect(selectCount(unread, { dms: true })).toBe(5)
-  expect(selectCount(unread, { dms: true, mentions: true })).toBe(12)
-  expect(selectCount(unread, { threads: true })).toBe(2)
+test("unreadCounts reports a missing file rather than returning zero", () => {
+  const readFileImpl: ReadFile = () => {
+    throw new Error("ENOENT")
+  }
+  expect(() => unreadCounts({ path: "/nope.json", readFileImpl })).toThrow(
+    /not found at \/nope\.json/,
+  )
+})
+
+test("selectCount switches between the badge and mentions only", () => {
+  const unread = { unreads: 5, highlights: 1, bullet: true, workspaces: 3 }
+  expect(selectCount(unread)).toBe(5)
+  expect(selectCount(unread, "all")).toBe(5)
+  expect(selectCount(unread, "highlights")).toBe(1)
+})
+
+test("formatTitle shows a bullet for unread activity with no badge", () => {
+  expect(
+    formatTitle({ unreads: 5, highlights: 1, bullet: true, workspaces: 1 }),
+  ).toBe("5")
+  // Nothing badge-worthy, but channels have unread messages.
+  expect(
+    formatTitle({ unreads: 0, highlights: 0, bullet: true, workspaces: 1 }),
+  ).toBe("•")
+  expect(
+    formatTitle({ unreads: 0, highlights: 0, bullet: false, workspaces: 1 }),
+  ).toBe("0")
+  // In highlights mode the bullet still stands in for "something is unread".
+  expect(
+    formatTitle(
+      { unreads: 5, highlights: 0, bullet: true, workspaces: 1 },
+      "highlights",
+    ),
+  ).toBe("•")
 })
 
 test("countState flips at the threshold", () => {
