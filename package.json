@@ -10,7 +10,7 @@
     "prepare": "lefthook install"
   },
   "devDependencies": {
-    "lefthook": "^1.13.6"
+    "lefthook": "^2.0.0"
   },
   "engines": {
     "node": ">=24"
