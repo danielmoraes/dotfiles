@@ -75,20 +75,14 @@ test("the bottom line leads with elapsed, at a size you can read", () => {
   expect(svg).toMatch(/font-size="12"[^>]*>16:06</)
 })
 
-test("the bottom row keeps clear of the corner the orbit sweeps", () => {
-  // Right-aligning the clock time put it in the bottom-right corner, where the
-  // rounded corner, the border stroke and the travelling dash all meet. It now
-  // flows left after the elapsed time, and even the longest elapsed label has
-  // to leave it ending well short of the edge.
-  for (const elapsedSec of [45, 21 * 60, 12 * 3600 + 5 * 60]) {
-    const svg = renderSlot({ ...RUNNING, elapsedSec })
-    const clock = svg.match(/<text x="([\d.]+)"[^>]*font-size="12"[^>]*>16:06</)
-    if (!clock?.[1]) {
-      throw new Error("no clock time drawn")
-    }
-    // 5 characters at 12px is ~34px wide; 124 is the key's right gutter.
-    expect(Number(clock[1]) + 34).toBeLessThan(124)
-  }
+test("the bottom row is padded the same on both sides", () => {
+  const svg = renderSlot(RUNNING)
+  // Elapsed against the left gutter, clock time against the right one — the
+  // same 20px the context percentage above it uses.
+  expect(svg).toMatch(/<text x="20" y="122"[^>]*font-size="16"[^>]*>21m</)
+  expect(svg).toMatch(
+    /<text x="124" y="122"[^>]*font-size="12"[^>]*text-anchor="end"[^>]*>16:06</,
+  )
 })
 
 test("secondary text is bright, not a mid grey on a dark key", () => {

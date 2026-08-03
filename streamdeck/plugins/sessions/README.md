@@ -9,7 +9,7 @@ One key per live Claude Code session, on page 1 of the deck.
 │  dotfiles      │  the name you gave it, over the repo
 │                │
 │  ▓▓▓▓▓▓▓▓░ 46% │  context window
-│  3h36m 16:23   │  running for, then since when
+│  3h36m   16:23 │  running for · started at
 └────────────────┘
 ```
 
@@ -153,14 +153,13 @@ guessed at. The tty was briefly shown on the key as an identifier and pulled:
 `s002` says nothing at a glance, and once sessions have names it was answering
 a question nothing was asking.
 
-## Keep out of the bottom-right corner
+## Gutters
 
-The rounded corner, the border stroke and the travelling orbit dash all
-converge there. Text right-aligned to the key's 20px gutter still only clears
-it by ~9px, which is a millimetre on the physical key — enough that the clock
-time read as buried under the animation even though nothing overlapped it. The
-bottom row flows left instead, and the clock time's position is estimated from
-the elapsed label's length rather than anchored to the right edge.
+Everything is pinned to one of two gutters, 20px in from each edge: headings,
+the repo and the elapsed time on the left; the context percentage and the clock
+time on the right. Nothing floats between them — an attempt at flowing the clock
+time inline after the elapsed label had to guess that label's width from its
+character count, and bought a ragged right edge for the trouble.
 
 ## The context window
 

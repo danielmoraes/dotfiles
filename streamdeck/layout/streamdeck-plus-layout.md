@@ -102,7 +102,7 @@ Each key is one live session:
 │  dotfiles      │  the name you gave it, over the repo
 │                │
 │  ▓▓▓▓▓▓▓▓░ 46% │  context window
-│  3h36m 16:23   │  running for, then since when
+│  3h36m   16:23 │  running for · started at
 └────────────────┘
 ```
 

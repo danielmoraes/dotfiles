@@ -240,43 +240,32 @@ export function renderSlot(slot: Slot, frame = 0): string {
   )
 }
 
-/** Rough advance width of `FOOT_SIZE` semibold text, per character. */
-const FOOT_ADVANCE = 8.9
-const FOOT_SIZE = 16
-/** Breathing room between the elapsed time and the clock time after it. */
-const FOOT_GAP = 10
-
 /**
- * The bottom row: how long it has been running, then when it started.
+ * The bottom row: how long it has been running, and when it started.
  *
- * Both are left-flowing, and that's the point. The clock time was right-aligned
- * to the same 20px gutter the rest of the key uses, which is fine in the middle
- * of the key and wrong in the bottom-right corner — that's where the rounded
- * corner, the border stroke and the travelling orbit dash all converge, leaving
- * about 9px of clearance. Nine SVG pixels is a millimetre on the physical key,
- * so the text read as buried under the animation even though nothing actually
- * overlapped it.
- *
- * Inline placement means estimating the elapsed label's width from its length.
- * The longest it gets is `12h05m`, which still leaves the clock time ending
- * well short of the corner.
+ * Pinned to the two gutters — elapsed against `LEFT`, the clock time against
+ * `RIGHT` — so the row is padded the same on both sides and lines up with the
+ * context percentage sitting above it. An attempt at flowing the clock time
+ * inline after the elapsed label had to guess that label's width from its
+ * character count, and bought a ragged right edge for the trouble.
  */
 function footer(elapsed: string | undefined, startedAt: string | undefined) {
-  if (elapsed === undefined) {
-    return startedAt === undefined
+  return (
+    (elapsed === undefined
       ? ""
-      : text(LEFT, ROW.foot, startedAt, { size: 12, fill: FAINT })
-  }
-  const head = text(LEFT, ROW.foot, elapsed, {
-    size: FOOT_SIZE,
-    fill: SUB,
-    weight: "600",
-  })
-  if (startedAt === undefined) {
-    return head
-  }
-  const x = round(LEFT + elapsed.length * FOOT_ADVANCE + FOOT_GAP)
-  return head + text(x, ROW.foot, startedAt, { size: 12, fill: FAINT })
+      : text(LEFT, ROW.foot, elapsed, {
+          size: 16,
+          fill: SUB,
+          weight: "600",
+        })) +
+    (startedAt === undefined
+      ? ""
+      : text(RIGHT, ROW.foot, startedAt, {
+          size: 12,
+          fill: FAINT,
+          anchor: "end",
+        }))
+  )
 }
 
 /**
