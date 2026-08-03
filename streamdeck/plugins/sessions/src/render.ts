@@ -17,7 +17,10 @@ import { elapsedLabel, type Slot } from "./session"
 
 /** Keys are 72x72 points; the @2x canvas every deck actually renders is 144. */
 const SIZE = 144
-/** The inner panel, inset so the state border has somewhere to live. */
+/**
+ * The inner panel — geometry only, no fill: it's the path the state border is
+ * drawn on, inset far enough that the border has somewhere to live.
+ */
 const PANEL = { x: 8, y: 8, w: 128, h: 128, r: 12 }
 /**
  * Length of the panel's rounded-rect outline: four straights of (128 - 2*12)
@@ -55,8 +58,16 @@ const ROW = { heading: 44, sub: 66, bar: 86, foot: 122 }
 /** Bar thickness. */
 const BAR_H = 7
 
-const BG = "#16191F"
-const PANEL_FILL = "#1F242C"
+/**
+ * Black, like Elgato's own built-in keys.
+ *
+ * The first cut used a near-black card (#16191F) on a slightly lighter panel
+ * (#1F242C), which looked considered on its own and looked *grey* next to the
+ * built-in "Work ▶" key sitting beside it on the same deck. Black also buys
+ * real contrast: the dimmest text on the key goes from ~5.5:1 against the old
+ * panel to ~7.7:1 here.
+ */
+const BG = "#000000"
 const WHITE = "#FFFFFF"
 /**
  * Secondary text.
@@ -204,7 +215,6 @@ function svg(body: string): string {
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">`,
     `<rect width="${SIZE}" height="${SIZE}" rx="16" fill="${BG}"/>`,
-    `<rect x="${PANEL.x}" y="${PANEL.y}" width="${PANEL.w}" height="${PANEL.h}" rx="${PANEL.r}" fill="${PANEL_FILL}"/>`,
     body,
     "</svg>",
   ].join("")

@@ -135,6 +135,15 @@ test("context colour climbs the same ladder as the cswap dial", () => {
   expect(severity(80)).toBe("#EF4444")
 })
 
+test("the key is black, like the built-in keys beside it", () => {
+  const svg = renderSlot(RUNNING)
+  expect(svg).toContain('fill="#000000"')
+  // The near-black card and its lighter panel both read as grey next to an
+  // Elgato built-in on the same deck.
+  expect(svg).not.toContain("#16191F")
+  expect(svg).not.toContain("#1F242C")
+})
+
 test("an empty slot stays quiet", () => {
   // Seven keys of "no session" would shout louder than the two that have one.
   expect(renderEmpty()).not.toContain("<text")
