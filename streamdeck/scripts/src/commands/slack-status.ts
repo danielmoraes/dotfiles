@@ -43,42 +43,64 @@ export async function run(ctx: Ctx, args: string[]): Promise<void> {
     return
   }
 
-  const payload = JSON.stringify(slackStatusPayload(preset.emoji, preset.text))
-  // The token goes in via a stdin config file rather than argv: anything on the
-  // command line is readable by every other process on the machine through `ps`.
-  // `--max-time` keeps a stalled connection from leaving the key hanging with
-  // no notification either way.
-  const result = await ctx.shell.run(
-    "curl",
-    [
-      "-s",
-      "--max-time",
-      "10",
-      "-X",
-      "POST",
-      "https://slack.com/api/users.profile.set",
-      "-H",
-      "Content-type: application/json; charset=utf-8",
-      "--data",
-      payload,
-      "--config",
-      "-",
-    ],
-    { input: `header = "Authorization: Bearer ${token}"\n` },
+  /** POST to a Slack method with the token supplied over stdin, not argv. */
+  const post = async (method: string, body: string) =>
+    ctx.shell.run(
+      "curl",
+      [
+        "-s",
+        "--max-time",
+        "10",
+        "-X",
+        "POST",
+        `https://slack.com/api/${method}`,
+        "-H",
+        "Content-type: application/json; charset=utf-8",
+        "--data",
+        body,
+        "--config",
+        "-",
+      ],
+      // Anything on the command line is readable by every other process on the
+      // machine through `ps`; a stdin config keeps the token out of it.
+      { input: `header = "Authorization: Bearer ${token}"\n` },
+    )
+
+  const status = await post(
+    "users.profile.set",
+    JSON.stringify(slackStatusPayload(preset.emoji, preset.text)),
   )
-  if (result.code !== 0) {
+  if (status.code !== 0) {
     await ctx.notify("Slack status", "Failed to reach Slack")
     return
   }
-
   // Slack answers 200 even when it refuses the call, putting the outcome in the
   // body as `{"ok":false,"error":"invalid_auth"}` — so curl exiting 0 says only
-  // that the request left the machine. Without this the key would flash
-  // "🟢 Available" while the status never changed.
-  const error = slackError(result.stdout)
-  if (error) {
-    ctx.log(`Slack rejected the status update: ${error}`)
-    await ctx.notify("Slack status", `Slack error: ${error}`)
+  // that the request left the machine.
+  const statusError = slackError(status.stdout)
+  if (statusError) {
+    ctx.log(`Slack rejected the status update: ${statusError}`)
+    await ctx.notify("Slack status", `Slack error: ${statusError}`)
+    return
+  }
+
+  // Presence is a separate call, and a separate scope. Without `users:write`
+  // this fails while the status above succeeds — report it rather than let the
+  // key claim a mode it only half-applied.
+  const presence = await post(
+    "users.setPresence",
+    JSON.stringify({ presence: preset.presence }),
+  )
+  const presenceError =
+    presence.code === 0 ? slackError(presence.stdout) : "unreachable"
+  if (presenceError) {
+    const hint =
+      presenceError === "missing_scope"
+        ? "add the users:write scope"
+        : presenceError
+    ctx.log(`Slack rejected the presence change: ${presenceError}`)
+    await ctx.notify("Slack status", `${preset.label} (presence: ${hint})`)
+    await ctx.fs.writeFile(stateFile, `${preset.name}\n`)
     return
   }
 

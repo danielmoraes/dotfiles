@@ -3,6 +3,7 @@ import {
   PRESETS,
   nextPreset,
   presetByName,
+  presetFromStatus,
   slackError,
   slackStatusPayload,
 } from "./slack"
@@ -50,22 +51,49 @@ test("an empty payload clears the status", () => {
 test("presetByName finds known presets only", () => {
   expect(presetByName("focus")?.emoji).toBe(":no_bell:")
   expect(presetByName("clear")?.text).toBe("")
-  expect(presetByName("nope")).toBeUndefined()
+  expect(presetByName("away")?.presence).toBe("away")
+  expect(presetByName("available")).toBeUndefined()
+  expect(presetByName("lunch")).toBeUndefined()
 })
 
-test("nextPreset walks the cycle and wraps", () => {
-  expect(nextPreset("available").name).toBe("focus")
-  expect(nextPreset("focus").name).toBe("lunch")
-  expect(nextPreset("lunch").name).toBe("clear")
-  expect(nextPreset("clear").name).toBe("available")
+test("nextPreset walks the three-state cycle and wraps", () => {
+  expect(nextPreset("clear").name).toBe("focus")
+  expect(nextPreset("focus").name).toBe("away")
+  expect(nextPreset("away").name).toBe("clear")
 })
 
 test("nextPreset starts from the top for an unknown or empty state", () => {
-  expect(nextPreset("").name).toBe("available")
-  expect(nextPreset("something-else").name).toBe("available")
+  expect(nextPreset("").name).toBe("focus")
+  expect(nextPreset("something-else").name).toBe("focus")
 })
 
-test("the cycle ends on `clear` so a full lap leaves no status", () => {
-  expect(PRESETS[PRESETS.length - 1]?.name).toBe("clear")
-  expect(PRESETS[PRESETS.length - 1]?.text).toBe("")
+test("only away forces presence; the rest let Slack decide", () => {
+  // Showing online with a Lunch message is visible but still gettable — away
+  // has to be a presence change, not just a status string.
+  expect(
+    PRESETS.filter((p) => p.presence === "away").map((p) => p.name),
+  ).toEqual(["away"])
+})
+
+test("clear is the empty status, so there is no separate Available", () => {
+  const clear = presetByName("clear")
+  expect(clear?.emoji).toBe("")
+  expect(clear?.text).toBe("")
+  expect(clear?.presence).toBe("auto")
+})
+
+test("presetFromStatus recognises a live profile", () => {
+  expect(presetFromStatus("", "")?.name).toBe("clear")
+  expect(presetFromStatus(":no_bell:", "Focusing — back later")?.name).toBe(
+    "focus",
+  )
+  expect(presetFromStatus(":palm_tree:", "Away")?.name).toBe("away")
+  // A status set by hand in Slack isn't one of ours.
+  expect(presetFromStatus(":coffee:", "brb")).toBeUndefined()
+})
+
+test("every preset has a key label short enough for a 72px key", () => {
+  for (const p of PRESETS) {
+    expect(p.keyLabel.length, p.name).toBeLessThanOrEqual(8)
+  }
 })

@@ -1,38 +1,56 @@
-/** A named Slack status the deck can set with one key. */
+/**
+ * A Slack "mode" the deck can set with one key.
+ *
+ * Presence and status are separate things in Slack, and the useful modes need
+ * both: "away" is a presence, "focusing" is a status, and clearing means
+ * putting each back to its default. Modelling only status would leave you
+ * showing as online with a Lunch message — visible, but still gettable.
+ */
 export type StatusPreset = {
   /** Stable id, used as the CLI argument and in the cycle state file. */
   name: string
   /** Shown in the macOS notification after setting. */
   label: string
+  /** Short form for a deck key — two lines of ~8 characters. */
+  keyLabel: string
   emoji: string
   text: string
+  /** `auto` lets Slack decide from activity; `away` forces the away dot. */
+  presence: "auto" | "away"
 }
 
 /**
- * The cycle a bare `sd-slack-status` press walks through. `clear` last so a
- * fourth press always gets you back to no status.
+ * The cycle a bare `sd-slack-status` press walks through.
+ *
+ * Three states, not four: an empty status *is* "online and available", so a
+ * separate Available preset only added a step that looked different in Slack
+ * while meaning the same thing.
  */
-// Typed as a non-empty tuple so `nextPreset` has a guaranteed fallback.
 export const PRESETS: readonly [StatusPreset, ...StatusPreset[]] = [
   {
-    name: "available",
-    label: "🟢 Available",
-    emoji: ":large_green_circle:",
-    text: "Available",
+    name: "clear",
+    label: "Online",
+    keyLabel: "Online",
+    emoji: "",
+    text: "",
+    presence: "auto",
   },
   {
     name: "focus",
     label: "🔴 Focusing",
+    keyLabel: "Focus",
     emoji: ":no_bell:",
     text: "Focusing — back later",
+    presence: "auto",
   },
   {
-    name: "lunch",
-    label: "🍽 Lunch",
-    emoji: ":knife_fork_plate:",
-    text: "Lunch",
+    name: "away",
+    label: "🌙 Away",
+    keyLabel: "Away",
+    emoji: ":palm_tree:",
+    text: "Away",
+    presence: "away",
   },
-  { name: "clear", label: "Status cleared", emoji: "", text: "" },
 ]
 
 /** Look up a preset by name; undefined if it isn't one of ours. */
@@ -41,12 +59,58 @@ export function presetByName(name: string): StatusPreset | undefined {
 }
 
 /**
- * The preset after `current` in the cycle, wrapping at the end. An unknown or
- * empty `current` (first press, or a hand-set status) starts from the top.
+ * The preset after `current` in the cycle, wrapping at the end.
+ *
+ * An unknown or empty `current` — a first press, or a status set by hand in
+ * Slack — advances to `focus` rather than `clear`. Falling to `clear` would be
+ * the arithmetic answer but a useless one: you'd press the key and watch
+ * nothing happen, because "no status" is what you already had.
  */
 export function nextPreset(current: string): StatusPreset {
   const index = PRESETS.findIndex((preset) => preset.name === current)
+  if (index === -1) {
+    return presetByName("focus") ?? PRESETS[0]
+  }
   return PRESETS[(index + 1) % PRESETS.length] ?? PRESETS[0]
+}
+
+/**
+ * Which preset a live Slack profile looks like.
+ *
+ * Presence can't be read without the `users:read` scope, so this matches on
+ * status alone and callers fall back to their own record for away.
+ */
+export function presetFromStatus(
+  emoji: string,
+  text: string,
+): StatusPreset | undefined {
+  if (emoji === "" && text === "") {
+    return presetByName("clear")
+  }
+  return PRESETS.find(
+    (preset) =>
+      preset.emoji === emoji || (preset.text !== "" && preset.text === text),
+  )
+}
+
+/** Slack `users.profile.set` payload for a status (empty clears it). */
+export function slackStatusPayload(
+  emoji: string,
+  text: string,
+): {
+  profile: {
+    status_text: string
+    status_emoji: string
+    status_expiration: number
+  }
+} {
+  return {
+    profile: {
+      status_text: text,
+      status_emoji: emoji,
+      status_expiration: 0,
+    },
+  }
 }
 
 /**
@@ -76,24 +140,4 @@ export function slackError(body: string): string | undefined {
     return undefined
   }
   return typeof record.error === "string" ? record.error : "unknown error"
-}
-
-/** Slack `users.profile.set` payload for a status (empty clears it). */
-export function slackStatusPayload(
-  emoji: string,
-  text: string,
-): {
-  profile: {
-    status_text: string
-    status_emoji: string
-    status_expiration: number
-  }
-} {
-  return {
-    profile: {
-      status_text: text,
-      status_emoji: emoji,
-      status_expiration: 0,
-    },
-  }
 }

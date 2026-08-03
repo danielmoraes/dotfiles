@@ -68,8 +68,9 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 - **K6 Next meeting** — local macOS Calendar via the `calendar` plugin; title +
   countdown, amber inside 10 minutes. No feed URL or token — see its README for
   why an `.ics` feed wasn't viable.
-- **K7 Slack status** — `sd-slack-status` cycles 🟢 available → 🔴 focus →
-  🍽 lunch → clear. Pass a preset name to jump straight to one.
+- **K7 Slack status** — shows your current status, read back from Slack. Press
+  cycles Online → 🔕 Focus → 🌴 Away (a real presence change, which needs the
+  `users:write` scope). Pass a preset name to `sd-slack-status` to jump.
 
 **Dials:** same as Page 1, so agent quota stays visible from both working pages.
 
