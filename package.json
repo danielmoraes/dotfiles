@@ -2,7 +2,7 @@
   "name": "dotfiles",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=24"
   },
