@@ -15,11 +15,6 @@ export type PluginRef = {
   version: string
 }
 
-const AGENTDECK: PluginRef = {
-  name: "AgentDeck",
-  uuid: "bound.serendipity.agentdeck",
-  version: "1.0.3.0",
-}
 const GITHUB_STATS: PluginRef = {
   name: "GitHub Stats",
   uuid: "com.dmoraes.github-stats",
@@ -59,6 +54,11 @@ const SPOTIFY: PluginRef = {
 const CSWAP: PluginRef = {
   name: "Claude Accounts",
   uuid: "com.dmoraes.cswap",
+  version: "0.1.0.0",
+}
+const SESSIONS: PluginRef = {
+  name: "Claude Sessions",
+  uuid: "com.dmoraes.sessions",
   version: "0.1.0.0",
 }
 
@@ -110,19 +110,42 @@ function run(command: string, title: string, ...args: string[]): Binding {
 }
 
 /**
- * AgentDeck's session slot: which Claude Code session is running, in which
- * project, and whether it's working, waiting or idle.
+ * One live Claude Code session: which repo and worktree, how far through its
+ * context window, and how long it has been running. A readout — pressing does
+ * nothing.
  *
- * The slot each key shows is **positional** — the plugin derives the index from
- * the key's own coordinates (`row * columns + col`), not from settings. So the
- * same binding repeated across K1..K7 reads as sessions 0..6, and moving a key
- * moves which session it watches.
+ * The slot each key shows is **positional** — the plugin sorts the keys by
+ * their coordinates and fills them oldest session first, so the same binding
+ * repeated across K1..K7 reads as sessions 0..6 and moving a key moves which
+ * session it watches. No per-key settings, by design.
+ *
+ * Reads Claude Code's own files — `~/.claude/sessions/*.json` and each
+ * session's transcript. No daemon, no hook, nothing to be down.
+ *
+ * This replaced AgentDeck's `session-slot`, which spent the key badly: a
+ * quarter of it on a Claude watermark, the state said three times over
+ * (border, badge pill, and the word `RUNNING`), and the one identity field
+ * clipped to 13 characters of `projectName` — the basename of `cwd`, so every
+ * worktree arrived as an unrelated slug and three sessions in the same repo
+ * were indistinguishable. Its action carries no Property Inspector and no
+ * settings, so none of that was tunable. Its daemon went the same way once it
+ * turned out to be serving facts that were either already in `~/.claude/` or
+ * wrong: `contextPercent` divides by a hardcoded 200 000, so a session at 28%
+ * of a 1M window read as 140%. See `../plugins/sessions/README.md`.
  */
 const SESSION_SLOT: Binding = {
   kind: "plugin",
-  plugin: AGENTDECK,
-  action: "bound.serendipity.agentdeck.session-slot",
-  name: "Session Slot",
+  plugin: SESSIONS,
+  action: "com.dmoraes.sessions.slot",
+  name: "Session",
+  settings: {
+    // Claude Code never writes the real window anywhere — it hands
+    // `context_window_size` to the status line on stdin and keeps no copy, and
+    // the transcript records `claude-opus-5` for both the 200k and 1M variants.
+    // So it's declared here. This deck runs the 1M model; the plugin falls back
+    // to Claude Code's own 200 000 default when nothing is set.
+    contextWindow: 1_000_000,
+  },
 }
 
 /**
@@ -154,9 +177,9 @@ const SYSTEM_VOLUME: Binding = {
  * - AgentDeck's Claude gauge (`option-dial`) followed it once `cswap` landed.
  *   It only ever showed the signed-in account, which `cswap` covers as one row
  *   of several — so keeping it meant two dials answering the same question,
- *   the exact duplication that cost AI Usage Limits its slot. Dropping it also
- *   takes the AgentDeck daemon out of the dial strip entirely: its session
- *   keys on page 1 still need the daemon, but nothing here does.
+ *   the exact duplication that cost AI Usage Limits its slot. That took the
+ *   AgentDeck daemon out of the dial strip; page 1's session keys later moved
+ *   off it too, so nothing on the deck depends on it now.
  * - The Launcher dial went the way of the old launch keys: not reached for.
  * - A generic media-transport dial (`actionIdx: 22` on the same built-in
  *   `system.multimedia` action as `SYSTEM_VOLUME`) doesn't reach Focus@Will.
@@ -208,11 +231,12 @@ const DIAL_STRIP: (Binding | null)[] = [
 ]
 
 /**
- * Page 1 — Agents. Live Claude Code sessions, the way AgentDeck lays them out.
+ * Page 1 — Agents. Every live Claude Code session at once.
  *
- * AgentDeck's own recommended Stream Deck + profile is a wall of session slots
- * and nothing else. This is that, one slot short: K8 has to advance the page to
- * keep the three-page cycle closed.
+ * A wall of session slots and nothing else — the shape AgentDeck's own
+ * recommended Stream Deck + profile uses, kept when its slot was replaced by
+ * ours. One slot short of eight: K8 has to advance the page to keep the
+ * three-page cycle closed.
  *
  * Nothing here *starts* an agent — Claude Code gets launched from a terminal,
  * so the old summon keys were dead weight.

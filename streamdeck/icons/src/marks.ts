@@ -247,7 +247,43 @@ function cswap(canvas: Canvas): void {
   )
 }
 
+/** sessions: a wall of session slots, one of them live. */
+function sessions(canvas: Canvas): void {
+  plate(canvas, PURPLE)
+  const half = w(0.22)
+  const radius = w(0.07)
+  const stroke = w(0.085)
+  const tile = (cx: number, cy: number, inset = 0): Sdf =>
+    roundedRect(
+      m(cx),
+      m(cy),
+      half - inset,
+      half - inset,
+      inset === 0 ? radius : radius * 0.6,
+    )
+  canvas.fill(
+    union(
+      tile(0.24, 0.24),
+      tile(0.76, 0.24),
+      tile(0.24, 0.76),
+      tile(0.76, 0.76),
+    ),
+    WHITE,
+  )
+  // Punch three of the four hollow, so one slot reads as the running session —
+  // the same "some full, some not" idea the key itself trades on.
+  canvas.fill(
+    union(
+      tile(0.76, 0.24, stroke),
+      tile(0.24, 0.76, stroke),
+      tile(0.76, 0.76, stroke),
+    ),
+    PURPLE,
+  )
+}
+
 export const MARKS: readonly Mark[] = [
+  { plugin: "com.dmoraes.sessions", draw: sessions },
   { plugin: "com.dmoraes.jira", draw: jira },
   { plugin: "com.dmoraes.cswap", draw: cswap },
   { plugin: "com.dmoraes.commands", draw: commands },

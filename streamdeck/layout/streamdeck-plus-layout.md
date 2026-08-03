@@ -46,8 +46,9 @@ of it. Three Claude-quota dials have been through here:
   "how much is left on the _other_ one, and can I jump to it", which is the one
   neither of the others could answer.
 
-Dropping AgentDeck's gauge also takes its daemon out of the dial strip
-entirely: page 1's session keys still need it, but nothing here does.
+Dropping AgentDeck's gauge took its daemon out of the dial strip; page 1's
+session keys later moved off it too, and the daemon is now gone from the deck
+altogether.
 
 Two more things were tried in the open slots and pulled:
 
@@ -67,9 +68,8 @@ Two more things were tried in the open slots and pulled:
   listener, which is what would have actually worked. A genuine Focus@Will
   bug, not fixable from the Stream Deck side.
 
-No dial depends on the AgentDeck daemon any more, so the whole strip keeps
-working if it's down. Only Claude runs here, so AgentDeck's Codex gauge is
-gone entirely too — the
+No part of the deck depends on the AgentDeck daemon any more. Only Claude runs
+here, so AgentDeck's Codex gauge is gone entirely too — the
 plugin fixes each dial's role to its action UUID (`option-dial` = Claude,
 `iterm-dial` = Codex, `utility-dial` = volume), so Codex's slot couldn't be
 repointed at anything else and had to go. System volume moved off
@@ -87,24 +87,57 @@ The default page: every live Claude Code session at once.
 
 ```
 [K1] Session 0        [K2] Session 1       [K3] Session 2       [K4] Session 3
-     (AgentDeck)          (AgentDeck)          (AgentDeck)          (AgentDeck)
+     (sessions)           (sessions)           (sessions)           (sessions)
 
 [K5] Session 4        [K6] Session 5       [K7] Session 6       [K8] Work ▶
-     (AgentDeck)          (AgentDeck)          (AgentDeck)          (next page)
+     (sessions)           (sessions)           (sessions)           (next page)
 ```
 
-Each key is an AgentDeck _Session Slot_: which session is running, in which
-project, and whether it's working, waiting or idle. Press to jump in.
+Each key is one live session:
 
-This mirrors AgentDeck's own recommended Stream Deck + profile, which is eight
-slots and nothing else — one short here, because K8 has to advance the page.
+```
+┌────────────────┐  ← teal dash orbiting  = running
+│                │    amber ring breathing = wants you
+│  steward       │    hairline             = idle
+│  ⑂ calm-mappi… │  the session's name, or its worktree
+│                │
+│  ▓▓▓▓▓▓▓▓░ 87% │  context window
+│  21m · 16:06   │  running for · started at      s002 ← terminal
+└────────────────┘
+```
 
-- **Slots are positional.** The plugin derives the index from the key's
-  coordinates (`row * columns + col`), not from its settings, so K1–K7 are
-  sessions 0–6 and moving a key moves which session it watches.
+`/rename` a session and the second line becomes that name — the fastest way to
+tell two keys in the same repo apart. Failing that it's the worktree slug, and
+the terminal in the corner is what leads back to the actual window.
+
+Eight slots and nothing else is AgentDeck's own recommended Stream Deck +
+profile, and the shape was kept — one short here, because K8 has to advance the
+page.
+
+- **Nothing behind these keys but files.** `sessions` reads
+  `~/.claude/sessions/*.json` and each session's transcript — no daemon, no
+  hook, no background service. It replaced AgentDeck's `session-slot`, which
+  spent a quarter of the key on a Claude watermark, wrote the state out three
+  times over, and clipped identity to 13 characters of a field holding the
+  _worktree slug_ — with no Property Inspector and no settings, so none of it
+  could be turned off. Its daemon went too, once it turned out to be serving
+  the same facts less accurately: its context reading divided by a hardcoded
+  200 000, so a session at 28% of a 1M window showed as 140%. See
+  [the plugin README](../plugins/sessions/README.md).
+- **Slots are positional.** The plugin sorts the keys by their coordinates and
+  fills them oldest session first, so K1–K7 are sessions 0–6 and moving a key
+  moves which session it watches. Oldest-first is what stops a new session
+  shuffling every other one along under your finger.
+- **Pressing does nothing.** These are readouts. Answering a permission prompt
+  from the deck needs a hook holding the tool call open, which went with the
+  daemon; in auto mode there is nothing to answer anyway.
 - **Nothing on this page launches an agent.** Claude Code gets started from a
   terminal, so the old `sd-summon-agent` / `sd-summon-claude` keys were dead
   weight. Both scripts still exist — they're just not bound to a key.
+- **The context bar needs a denominator**, and Claude Code persists it nowhere
+  — it hands `context_window_size` to the status line and keeps no copy. So
+  `contextWindow` is declared in `layout.ts` (1M here); unset it falls back to
+  the same 200 000 Claude Code itself defaults to.
 
 **Dials:** see [above](#dials-every-page) — same on every page.
 

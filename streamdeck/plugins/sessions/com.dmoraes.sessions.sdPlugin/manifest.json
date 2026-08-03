@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Claude Sessions",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "UUID": "com.dmoraes.sessions",
+  "Description": "One key per live Claude Code session: repo, worktree, context window, and how long it has been running. Press to allow a held permission prompt. Reads the AgentDeck daemon.",
+  "Category": "Claude Sessions",
+  "CategoryIcon": "imgs/plugin/category",
+  "Icon": "imgs/plugin/icon",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": {
+    "MinimumVersion": "6.9"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "Session",
+      "UUID": "com.dmoraes.sessions.slot",
+      "Icon": "imgs/actions/slot/icon",
+      "Tooltip": "A live Claude Code session. Slots fill oldest-first across the keys; press to allow a held permission prompt, hold to deny.",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/slot/key",
+          "ShowTitle": false
+        }
+      ]
+    }
+  ]
+}

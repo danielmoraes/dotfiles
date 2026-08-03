@@ -165,7 +165,6 @@ fi
 echo
 info "Install these from their releases (see streamdeck/plugins/README.md)"
 cat <<'EOF'
-  [ ] AgentDeck                 npx @agentdeck/setup && agentdeck daemon install
   [ ] stream-deck-ai-limits     github.com/lenadweb/stream-deck-ai-limits
   [ ] stream-deck-ical          github.com/pedrofuentes/stream-deck-ical
   [ ] essentials-for-spotify    github.com/ntanis-dev/essentials-for-spotify

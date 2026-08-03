@@ -211,17 +211,35 @@ test("D1 is the cswap accounts dial, and it's the only quota readout", () => {
   }
 })
 
-test("no dial depends on the AgentDeck daemon", () => {
-  // Its session keys on page 1 still do, deliberately — but the dial strip is
-  // meant to keep working when the daemon is down, which is what cost
-  // AgentDeck's own volume dial its slot earlier.
+test("nothing on the deck is an AgentDeck action any more", () => {
+  // The dial strip lost its AgentDeck actions first — a dial that goes dead
+  // whenever a daemon is down had no business controlling system volume. Page
+  // 1's session keys followed once `sessions` replaced them: same daemon
+  // behind the data, but the artwork is ours, so nothing here binds a
+  // third-party action whose rendering we can't change.
   for (const page of PAGES) {
-    const { encoder } = controllers(pageManifest(page))
-    for (const entry of Object.values(encoder)) {
+    const { keypad, encoder } = controllers(pageManifest(page))
+    for (const entry of [...Object.values(keypad), ...Object.values(encoder)]) {
       if (isRecord(entry)) {
         expect(String(entry.UUID), `${page.title}`).not.toMatch(/agentdeck/)
       }
     }
+  }
+})
+
+test("page 1 is a wall of session keys", () => {
+  const { keypad } = controllers(pageManifest(PAGES[0]!))
+  const slots = Object.values(keypad).filter(
+    (entry) => isRecord(entry) && entry.UUID === "com.dmoraes.sessions.slot",
+  )
+  // Seven, not eight: K8 advances the page. Positional slots mean the keys
+  // carry no settings at all — the plugin reads their coordinates.
+  expect(slots).toHaveLength(7)
+  for (const slot of slots) {
+    if (!isRecord(slot) || !isRecord(slot.Plugin)) {
+      throw new Error("expected a plugin action")
+    }
+    expect(slot.Plugin.UUID).toBe("com.dmoraes.sessions")
   }
 })
 

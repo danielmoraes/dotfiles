@@ -1,0 +1,14 @@
+<!-- Key tile: 72x72, shown where the app lists the action and on an unbound
+     key. The action replaces the whole image at runtime (setImage), so this is
+     a still of what a running session looks like rather than a live readout. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <rect width="72" height="72" rx="8" fill="#16191F" />
+  <rect x="4" y="4" width="64" height="64" rx="6" fill="#1F242C" />
+  <rect x="4" y="4" width="64" height="64" rx="6" fill="none" stroke="#2DD4BF" stroke-width="1.6"
+        stroke-dasharray="60 186" stroke-linecap="round" opacity="0.95" />
+  <rect x="10" y="14" width="26" height="6" rx="3" fill="#FFFFFF" opacity="0.92" />
+  <rect x="10" y="24" width="18" height="4" rx="2" fill="#6B7280" />
+  <rect x="10" y="44" width="44" height="4" rx="2" fill="#2A2F3A" />
+  <rect x="10" y="44" width="26" height="4" rx="2" fill="#F59E0B" />
+  <rect x="10" y="56" width="22" height="4" rx="2" fill="#6B7280" opacity="0.7" />
+</svg>

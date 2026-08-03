@@ -8,15 +8,15 @@ Stream Deck app 6.9+).
 
 | #   | Plugin                     | UUID                          | Used on          | Source                                                                                    | SDK   |
 | --- | -------------------------- | ----------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | ----- |
-| 1   | **AgentDeck**              | `bound.serendipity.agentdeck` | P1 K1–K7         | [puritysb/AgentDeck](https://github.com/puritysb/AgentDeck)                               | ✅ v3 |
 | 4   | **Essentials for Spotify** | `com.ntanis-dev…`             | P3 K5/K6         | [ntanis-dev/essentials-for-spotify](https://github.com/ntanis-dev/essentials-for-spotify) | ✅ v3 |
 | 6   | **github-stats**           | `com.dmoraes.github-stats`    | P2 K1–K3         | [`github-stats/`](github-stats/) (this repo)                                              | ✅ v3 |
 | 7   | **slack-unread**           | `com.dmoraes.slack-unread`    | P2 K5            | [`slack-unread/`](slack-unread/README.md) (this repo)                                     | ✅ v3 |
 | 8   | **weekly-metrics**         | `com.dmoraes.weekly-metrics`  | P3 K4            | [`weekly-metrics/`](weekly-metrics/README.md) (this repo)                                 | ✅ v3 |
-| 9   | **calendar**               | `com.dmoraes.calendar`        | P2 K6            | [`calendar/`](calendar/README.md) (this repo)                                             | ✅ v3 |
+| 9   | **calendar**               | `com.dmoraes.calendar`        | P2 K6            | [`calendar/`](calendar/README.md) (this repo)                                              | ✅ v3 |
 | 10  | **commands**               | `com.dmoraes.commands`        | P1/P3 scripts    | [`commands/`](commands/) (this repo)                                                      | ✅ v3 |
 | 11  | **jira**                   | `com.dmoraes.jira`            | P2 K4            | [`jira/`](jira/) (this repo)                                                              | ✅ v3 |
 | 12  | **cswap**                  | `com.dmoraes.cswap`           | D1               | [`cswap/`](cswap/README.md) (this repo)                                                   | ✅ v3 |
+| 13  | **sessions**               | `com.dmoraes.sessions`        | P1 K1–K7         | [`sessions/`](sessions/README.md) (this repo)                                             | ✅ v3 |
 
 Action UUIDs for each are in
 [`../profiles/src/layout.ts`](../profiles/src/layout.ts) — that file is the only
@@ -25,8 +25,12 @@ place they're referenced.
 **cswap** holds D1, and is the only Claude-quota dial left: usage limits for
 _every_ managed account, which is active, and a press to switch. Two dials that
 each showed only the signed-in account's quota (AgentDeck's gauge, then AI Usage
-Limits) were dropped as duplicates of it — so AgentDeck is now page-1 keys only,
-and no dial needs its daemon.
+Limits) were dropped as duplicates of it.
+
+**AgentDeck is gone entirely** — plugin and daemon both. Page 1's session keys
+were the last thing using it, and [`sessions`](sessions/README.md) reads the
+same facts straight out of `~/.claude/`, more accurately. Nothing on this deck
+now depends on a background service of any kind.
 
 **D4 (System volume)** isn't a plugin at all — it's Elgato's built-in
 `com.elgato.streamdeck.system.multimedia` system action, which sends real
@@ -49,6 +53,16 @@ for both.
   its model is one linked account per _provider_, reading whatever that CLI is
   signed into. Adopting its Swift daemon and bridge protocol to add what the
   `cswap` CLI already answers in a single JSON call wasn't a good trade.
+- **Keeping AgentDeck's `session-slot`** for page 1 — the action has no
+  Property Inspector and takes no settings, so its layout couldn't be changed:
+  a big Claude watermark, the state written out three times, and identity
+  clipped to 13 characters of a field holding the worktree slug rather than the
+  repo. Drawing the key ourselves was the smaller job.
+- **Keeping its daemon as the data source**, once the key was ours. Two of the
+  fields it served were unusable — `contextPercent` divides by a hardcoded
+  200 000, so a session at 28% of a 1M window read as 140% — and everything
+  else it knew turned out to be in `~/.claude/` already, including the
+  `/rename` name it has no concept of. See [`sessions/`](sessions/README.md).
 - **codex-stream-deck**, **codex-micro-emulator**, **terminaldeck** — overlap
   with AgentDeck; two use fragile custom integrations (app-shim / raw HID).
 - **ellreka/streamdeck-slack-status** — stale (2022), and only _sets_ status.
@@ -119,19 +133,22 @@ Learned the hard way — the app rejects a plugin silently apart from one line i
 Action and key images are hand-authored SVGs inside each `.sdPlugin/imgs/`. The
 PNG plugin icons are generated — see [`../icons/`](../icons/README.md).
 
-## AgentDeck setup
+## Removing AgentDeck
 
-AgentDeck is a daemon plus thin-client surfaces; the Stream Deck plugin is one
-of them. With no daemon running the keys show an OFFLINE state.
+Nothing on the deck uses it any more. If it's still installed from before:
 
 ```sh
-npx @agentdeck/setup        # installs the `agentdeck` CLI + daemon + agent hooks
-agentdeck daemon install    # LaunchAgent so the daemon starts at login
-agentdeck status            # should report the daemon on :9120
+agentdeck daemon uninstall   # remove the LaunchAgent
 ```
 
-The setup step appends hooks to `~/.claude/settings.json` (it backs the file up
-first and leaves existing hooks alone).
+Then delete `bound.serendipity.agentdeck.sdPlugin` from the Stream Deck app,
+and take its hooks out of `~/.claude/settings.json` — `SessionStart`,
+`SessionEnd`, `UserPromptSubmit`, `Notification`, `PreToolUse`, `PostToolUse`,
+`PostToolUseFailure` and `Stop` each carry a `curl` to `127.0.0.1:9120`.
+
+Worth doing rather than leaving: `PreToolUse` and `Stop` are **blocking**
+(`--max-time` 60s and 10s), so every tool call in every Claude Code session
+waits on a round-trip to a daemon nothing reads any more.
 
 ## Secrets
 
