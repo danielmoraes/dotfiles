@@ -17,29 +17,41 @@ Legend: `[K1]…[K8]` keys, `(D1)…(D4)` dials. `→` = press, `⟳` = rotate.
 
 ## Page 1 — Agents (home)
 
-The default page. Driving Claude Code / Codex / pi and switching context.
+The default page: every live Claude Code session at once.
 
 ```
-[K1] Agent status     [K2] Claude          [K3] Codex           [K4] pi
-     (AgentDeck)           summon-agent         summon-agent         summon-agent
+[K1] Session 0        [K2] Session 1       [K3] Session 2       [K4] Session 3
+     (AgentDeck)          (AgentDeck)          (AgentDeck)          (AgentDeck)
 
-[K5] Account          [K6] Summon          [K7] Claude limits   [K8] Work ▶
-     (script)              (script)             (ai-limits)          (next page)
+[K5] Session 4        [K6] Session 5       [K7] Session 6       [K8] Work ▶
+     (AgentDeck)          (AgentDeck)          (AgentDeck)          (next page)
 ```
 
-- **K1 Agent status** — AgentDeck _Session Slot_: which agent is running, in
-  which project, and whether it's working, waiting or idle. Press to jump in.
-- **K2–K4** — `sd-summon-agent <claude|codex|pi>`; launches the CLI in a terminal.
-- **K5 Account** — `sd-switch-claude-account`, cycles configured accounts.
-- **K6 Summon** — `sd-summon-claude`, opens a terminal in the current repo.
-- **K7 Claude limits** — `com.len.limits.progress`, usage + reset window.
+Each key is an AgentDeck _Session Slot_: which session is running, in which
+project, and whether it's working, waiting or idle. Press to jump in.
+
+This mirrors AgentDeck's own recommended Stream Deck + profile, which is eight
+slots and nothing else — one short here, because K8 has to advance the page.
+
+- **Slots are positional.** The plugin derives the index from the key's
+  coordinates (`row * columns + col`), not from its settings, so K1–K7 are
+  sessions 0–6 and moving a key moves which session it watches.
+- **Nothing on this page launches an agent.** Claude Code gets started from a
+  terminal, so the old `sd-summon-agent` / `sd-summon-claude` keys were dead
+  weight. Both scripts still exist — they're just not bound to a key.
 
 **Dials (Pages 1 & 2 share these):**
 
-- `(D1)` AgentDeck **Claude usage** — quota on the LCD strip
-- `(D2)` AgentDeck **Codex usage**
-- `(D3)` AgentDeck **Volume** · → mute
-- `(D4)` AgentDeck **Launcher** — ⟳ pick an agent/project, → start a session
+- `(D1)` AgentDeck **Claude usage** — quota on the LCD strip. ⟳ cycles the
+  window: both → 5h → 7d → session · → refresh
+- `(D2)` AgentDeck **Volume** · → mute
+- `(D3)` AgentDeck **Launcher** — ⟳ pick a project, → start a session
+- `(D4)` Spotify **Playback control** — ⟳ seek · → play/pause
+
+Only Claude runs here, so AgentDeck's Codex gauge is gone. It can't be pointed
+at Claude instead: the plugin fixes each dial's role to its action UUID
+(`option-dial` = Claude, `iterm-dial` = Codex, `utility-dial` = volume). The one
+Claude gauge covers every window on its own, which frees `(D4)` for media.
 
 ---
 
@@ -73,7 +85,7 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
   (`dnd:write`); Away is a real presence change (`users:write`). Pass a preset
   name to `sd-slack-status` to jump straight to one.
 
-**Dials:** same as Page 1, so agent quota stays visible from both working pages.
+**Dials:** same as Page 1, so Claude quota stays visible from both working pages.
 
 ---
 

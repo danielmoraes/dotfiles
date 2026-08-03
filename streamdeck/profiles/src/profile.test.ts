@@ -1,5 +1,5 @@
 import { expect, test } from "vite-plus/test"
-import { COLUMNS, DIALS, PAGES, ROWS } from "./layout.ts"
+import { type Page, COLUMNS, DIALS, PAGES, ROWS } from "./layout.ts"
 import { buildProfile, pageManifest, stableUuid } from "./profile.ts"
 import { findDevice, profilesNamed } from "./install.ts"
 
@@ -52,16 +52,35 @@ test("command keys use the commands plugin, never Elgato's Open action", () => {
   }
 })
 
-test("command keys carry the command name and its args", () => {
-  const { keypad } = controllers(pageManifest(PAGES[0]!))
-  // P1 K2 launches Claude via sd-summon-agent claude.
-  const k2 = keypad["1,0"]
-  if (!isRecord(k2) || !isRecord(k2.Settings)) {
-    throw new Error("expected a command action at K2")
+test("command keys carry the command name", () => {
+  // P3 K1 runs sd-focus-mode. Page 1 is all session slots — it has no scripts.
+  const { keypad } = controllers(pageManifest(PAGES[2]!))
+  const k1 = keypad["0,0"]
+  if (!isRecord(k1) || !isRecord(k1.Settings)) {
+    throw new Error("expected a command action at K1")
   }
-  expect(k2.UUID).toBe("com.dmoraes.commands.run")
-  expect(k2.Settings.command).toBe("sd-summon-agent")
-  expect(k2.Settings.args).toEqual(["claude"])
+  expect(k1.UUID).toBe("com.dmoraes.commands.run")
+  expect(k1.Settings.command).toBe("sd-focus-mode")
+  expect(k1.Settings.args).toEqual([])
+})
+
+test("command args survive serialisation", () => {
+  // No key on the deck passes args today, so cover the path directly rather
+  // than let it rot: the plugin reads `args` straight out of these settings.
+  const page: Page = {
+    title: "Args",
+    keys: [
+      { kind: "run", command: "sd-summon-agent", args: ["claude"], title: "C" },
+    ],
+    dials: [],
+  }
+  const { keypad } = controllers(pageManifest(page))
+  const k1 = keypad["0,0"]
+  if (!isRecord(k1) || !isRecord(k1.Settings)) {
+    throw new Error("expected a command action at K1")
+  }
+  expect(k1.Settings.command).toBe("sd-summon-agent")
+  expect(k1.Settings.args).toEqual(["claude"])
 })
 
 test("the profile manifest lists every page and points at the first", () => {

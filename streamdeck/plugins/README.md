@@ -8,9 +8,9 @@ Stream Deck app 6.9+).
 
 | #   | Plugin                     | UUID                          | Used on          | Source                                                                                    | SDK   |
 | --- | -------------------------- | ----------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | ----- |
-| 1   | **AgentDeck**              | `bound.serendipity.agentdeck` | P1 K1 + dials    | [puritysb/AgentDeck](https://github.com/puritysb/AgentDeck)                               | ✅ v3 |
-| 2   | **AI Usage Limits**        | `com.len.limits`              | P1 K7            | [lenadweb/stream-deck-ai-limits](https://github.com/lenadweb/stream-deck-ai-limits)       | ✅ v3 |
-| 4   | **Essentials for Spotify** | `com.ntanis-dev…`             | P3 K5/K6 + dials | [ntanis-dev/essentials-for-spotify](https://github.com/ntanis-dev/essentials-for-spotify) | ✅ v3 |
+| 1   | **AgentDeck**              | `bound.serendipity.agentdeck` | P1 K1–K7 + dials | [puritysb/AgentDeck](https://github.com/puritysb/AgentDeck)                               | ✅ v3 |
+| 2   | **AI Usage Limits**        | `com.len.limits`              | — (see below)    | [lenadweb/stream-deck-ai-limits](https://github.com/lenadweb/stream-deck-ai-limits)       | ✅ v3 |
+| 4   | **Essentials for Spotify** | `com.ntanis-dev…`             | P1/P2 D4, P3 K5/K6 + dials | [ntanis-dev/essentials-for-spotify](https://github.com/ntanis-dev/essentials-for-spotify) | ✅ v3 |
 | 6   | **github-stats**           | `com.dmoraes.github-stats`    | P2 K1–K3         | [`github-stats/`](github-stats/) (this repo)                                              | ✅ v3 |
 | 7   | **slack-unread**           | `com.dmoraes.slack-unread`    | P2 K5            | [`slack-unread/`](slack-unread/README.md) (this repo)                                     | ✅ v3 |
 | 8   | **weekly-metrics**         | `com.dmoraes.weekly-metrics`  | P3 K4            | [`weekly-metrics/`](weekly-metrics/README.md) (this repo)                                 | ✅ v3 |
@@ -21,6 +21,11 @@ Stream Deck app 6.9+).
 Action UUIDs for each are in
 [`../profiles/src/layout.ts`](../profiles/src/layout.ts) — that file is the only
 place they're referenced.
+
+**AI Usage Limits** is installed but unbound. Page 1 gave its key back to a
+session slot, and AgentDeck's Claude dial already shows quota and reset window —
+rotate it to cycle both → 5h → 7d → session. Kept installed because it's the
+only thing that renders usage as a *key* rather than on the LCD strip.
 
 ### Considered but not chosen
 

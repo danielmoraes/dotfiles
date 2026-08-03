@@ -35,11 +35,6 @@ const WEEKLY_METRICS: PluginRef = {
   uuid: "com.dmoraes.weekly-metrics",
   version: "0.1.0.0",
 }
-const AI_LIMITS: PluginRef = {
-  name: "AI Usage Limits",
-  uuid: "com.len.limits",
-  version: "0.1.19.0",
-}
 /** Exported: `profile.ts` needs it to serialise the `run` bindings. */
 export const COMMANDS: PluginRef = {
   name: "Commands",
@@ -102,31 +97,39 @@ function run(command: string, title: string, ...args: string[]): Binding {
 }
 
 /**
- * Page 1 — Agents. Driving Claude Code / Codex / pi and switching context.
+ * AgentDeck's session slot: which Claude Code session is running, in which
+ * project, and whether it's working, waiting or idle.
  *
- * The dials are AgentDeck's: live Claude and Codex quota on the LCD strip,
- * system volume, and a session launcher.
+ * The slot each key shows is **positional** — the plugin derives the index from
+ * the key's own coordinates (`row * columns + col`), not from settings. So the
+ * same binding repeated across K1..K7 reads as sessions 0..6, and moving a key
+ * moves which session it watches.
+ */
+const SESSION_SLOT: Binding = {
+  kind: "plugin",
+  plugin: AGENTDECK,
+  action: "bound.serendipity.agentdeck.session-slot",
+  name: "Session Slot",
+}
+
+/**
+ * Page 1 — Agents. Live Claude Code sessions, the way AgentDeck lays them out.
+ *
+ * AgentDeck's own recommended Stream Deck + profile is a wall of session slots
+ * and nothing else. This is that, one slot short: K8 has to advance the page to
+ * keep the three-page cycle closed.
+ *
+ * Nothing here *starts* an agent — Claude Code gets launched from a terminal,
+ * so the old summon keys were dead weight. Only Claude runs here, so the Codex
+ * gauge is gone too: AgentDeck hardcodes each dial's role to its action UUID
+ * (`option-dial` = Claude, `iterm-dial` = Codex), so it can't be repointed. The
+ * remaining Claude gauge covers the windows on its own — rotating it cycles
+ * both → 5h → 7d → session. That frees E4 for Spotify.
  */
 const AGENTS: Page = {
   title: "Agents",
   keys: [
-    {
-      kind: "plugin",
-      plugin: AGENTDECK,
-      action: "bound.serendipity.agentdeck.session-slot",
-      name: "Session Slot",
-    },
-    run("sd-summon-agent", "Claude", "claude"),
-    run("sd-summon-agent", "Codex", "codex"),
-    run("sd-summon-agent", "pi", "pi"),
-    run("sd-switch-claude-account", "Account"),
-    run("sd-summon-claude", "Summon"),
-    {
-      kind: "plugin",
-      plugin: AI_LIMITS,
-      action: "com.len.limits.progress",
-      name: "Progress Bars (Claude)",
-    },
+    ...Array.from({ length: 7 }, () => SESSION_SLOT),
     { kind: "nextPage", title: "Work ▶" },
   ],
   dials: [
@@ -135,12 +138,6 @@ const AGENTS: Page = {
       plugin: AGENTDECK,
       action: "bound.serendipity.agentdeck.option-dial",
       name: "Claude Usage",
-    },
-    {
-      kind: "plugin",
-      plugin: AGENTDECK,
-      action: "bound.serendipity.agentdeck.iterm-dial",
-      name: "Codex Usage",
     },
     {
       kind: "plugin",
@@ -154,13 +151,19 @@ const AGENTS: Page = {
       action: "bound.serendipity.agentdeck.launcher",
       name: "Launcher",
     },
+    {
+      kind: "plugin",
+      plugin: SPOTIFY,
+      action: "com.ntanis.essentials-for-spotify.playback-control-dial",
+      name: "Playback Control",
+    },
   ],
 }
 
 /**
  * Page 2 — Work dashboard. Read-mostly status; pressing opens the relevant app.
  *
- * Dials stay on AgentDeck so quota is glanceable from both working pages.
+ * Dials are page 1's, so Claude quota stays glanceable from both working pages.
  */
 const WORK: Page = {
   title: "Work",
