@@ -21,7 +21,6 @@
  * that needs a hook holding the call open, which no file can provide.
  */
 
-import { execFileSync } from "node:child_process"
 import { readdirSync, readFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
@@ -115,32 +114,6 @@ export function isAlive(pid: number): boolean {
 }
 
 /**
- * The terminal a pid is attached to, e.g. `s002` for `/dev/ttys002`.
- *
- * `ps` is a subprocess, so this is memoised per pid — a process's controlling
- * terminal doesn't change. Absolute path because the Stream Deck app runs
- * plugins under launchd with a four-entry `PATH`.
- */
-export function terminalOf(pid: number): string | undefined {
-  let out: string
-  try {
-    out = execFileSync("/bin/ps", ["-o", "tty=", "-p", String(pid)], {
-      encoding: "utf8",
-      timeout: 1_000,
-    })
-  } catch {
-    return undefined
-  }
-  const tty = out.trim()
-  if (tty === "" || tty === "??" || tty === "-") {
-    return undefined
-  }
-  const name = tty.slice(tty.lastIndexOf("/") + 1)
-  const short = name.startsWith("tty") ? name.slice(3) : name
-  return short === "" ? undefined : short
-}
-
-/**
  * The live session set, cached so repaints don't rescan.
  *
  * Ordered oldest first, so a new session lands on the first free key at the end
@@ -150,7 +123,6 @@ export function terminalOf(pid: number): string | undefined {
 export class Sessions {
   private cache: LocalSession[] = []
   private readAt = Number.NEGATIVE_INFINITY
-  private readonly terminals = new Map<number, string | undefined>()
 
   constructor(private readonly dir: string = sessionsDir()) {}
 
@@ -160,14 +132,6 @@ export class Sessions {
       this.readAt = now
     }
     return this.cache
-  }
-
-  /** Memoised: see `terminalOf`. */
-  terminal(pid: number): string | undefined {
-    if (!this.terminals.has(pid)) {
-      this.terminals.set(pid, terminalOf(pid))
-    }
-    return this.terminals.get(pid)
   }
 
   private read(): LocalSession[] {

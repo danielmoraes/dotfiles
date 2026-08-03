@@ -148,7 +148,6 @@ export class Slot extends SingletonAction<SlotSettings> {
           return
         }
         const slot = toSlot(session, now, {
-          terminal: this.sessions.terminal(session.pid),
           contextPercent: this.context.percent(
             session.sessionId,
             session.cwd,

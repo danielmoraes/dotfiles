@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { expect, test } from "vite-plus/test"
-import { isAlive, nameOf, parseSession, Sessions, terminalOf } from "./local"
+import { isAlive, nameOf, parseSession, Sessions } from "./local"
 
 /** A record shaped like the ones Claude Code writes. */
 function record(fields: Record<string, unknown> = {}): string {
@@ -49,17 +49,6 @@ test("liveness is checked, so a crashed session's record doesn't linger", () => 
   expect(isAlive(process.pid)).toBe(true)
   // Nothing runs at pid 0x7FFFFFFF; the record would otherwise claim a key.
   expect(isAlive(2_147_483_647)).toBe(false)
-})
-
-test("the terminal is the pid's tty, without the prefix", () => {
-  // This process may or may not have one, depending on how tests are run —
-  // both answers are valid, but the shape isn't.
-  const tty = terminalOf(process.pid)
-  if (tty !== undefined) {
-    expect(tty).not.toMatch(/^tty/)
-    expect(tty).not.toContain("/")
-  }
-  expect(terminalOf(2_147_483_647)).toBeUndefined()
 })
 
 test("sessions are listed oldest first, so a new one appends", () => {

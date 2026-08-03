@@ -99,10 +99,10 @@ Each key is one live session:
 ┌────────────────┐  ← teal dash orbiting  = running
 │                │    amber ring breathing = wants you
 │  stream deck   │    hairline             = idle
-│  steward       │  the name you gave it, over the repo
+│  dotfiles      │  the name you gave it, over the repo
 │                │
-│  ▓▓▓▓▓▓▓▓░ 87% │  context window
-│  21m · 16:06   │  running for · started at      s002 ← terminal
+│  ▓▓▓▓▓▓▓▓░ 46% │  context window
+│  3h36m   16:23 │  running for · started at
 └────────────────┘
 ```
 
@@ -116,8 +116,7 @@ Unnamed, it's the repo on top and the worktree below:
 
 `/rename` a session and its name takes the top line, with the repo beneath it —
 the fastest way to tell two keys in the same repo apart. Failing that the repo
-leads and the worktree slug goes below. The terminal in the corner is what
-leads back to the actual window.
+leads and the worktree slug goes below.
 
 Eight slots and nothing else is AgentDeck's own recommended Stream Deck +
 profile, and the shape was kept — one short here, because K8 has to advance the

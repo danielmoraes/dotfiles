@@ -6,10 +6,10 @@ One key per live Claude Code session, on page 1 of the deck.
 ┌────────────────┐  ← teal dash orbiting  = running
 │                │    amber ring breathing = wants you
 │  stream deck   │    hairline             = idle
-│  steward       │  the name you gave it, over the repo
+│  dotfiles      │  the name you gave it, over the repo
 │                │
-│  ▓▓▓▓▓▓▓▓░ 87% │  context window
-│  21m · 16:06   │  running for · started at      s002 ← terminal
+│  ▓▓▓▓▓▓▓▓░ 46% │  context window
+│  3h36m   16:23 │  running for · started at
 └────────────────┘
 ```
 
@@ -26,19 +26,16 @@ writes.
 
 ## Telling seven sessions apart
 
-Three things on the key are there to answer "which one is this", in order of
-how much they're worth:
+Two things on the key answer "which one is this", in order of how much they're
+worth:
 
 1. **The name you gave it.** `/rename` in the session and it takes the top
    line, with the repo demoted to the smaller line beneath as context.
 2. **The worktree**, when there's no name. Then the repo leads and the slug
    sits under it, marked with a branch glyph.
-3. **The terminal** (`s002`), bottom right. The only identifier that leads back
-   to a window: run `tty` in any terminal and it prints the same thing.
-
-Either way the top line answers "which session" and the second answers "where",
-which is the order you read them in. The repo is on the key at all times —
-which is the one thing AgentDeck's slot could never show.
+   Either way the top line answers "which session" and the second answers "where",
+   which is the order you read them in. The repo is on the key at all times —
+   which is the one thing AgentDeck's slot could never show.
 
 ## Why not AgentDeck's own session slot
 
@@ -83,7 +80,6 @@ and no hook of ours in any session.
 | ---------------------------------------------------- | ---------------------------------- |
 | `~/.claude/sessions/<pid>.json`                      | cwd, name, status, start time, pid |
 | `~/.claude/projects/<encoded-cwd>/<sessionId>.jsonl` | context tokens                     |
-| `/bin/ps -o tty= -p <pid>`                           | terminal                           |
 
 Claude Code writes a record per running session and keeps it current:
 
@@ -104,8 +100,7 @@ hard enough not to clean up, so each pid is checked with signal 0 before its
 key is drawn — a key naming a session that ended an hour ago is worse than an
 empty one.
 
-The directory is re-read at most once a second and transcripts every five;
-`ps` runs once per pid, since a process's controlling terminal never changes.
+The directory is re-read at most once a second and transcripts every five.
 Repaints run at 10fps while any border is moving and drop to 1s when
 everything is idle.
 
@@ -152,9 +147,11 @@ open. That went with the daemon. Getting it back means owning a blocking hook
 in every session, which is a real cost to weigh against how often it fires:
 in auto mode Claude never raises a permission prompt at all.
 
-Jumping to the session's terminal is the other obvious thing to put here — the
-key already shows which one it is — but resolving a `tty` to a window is
-terminal-specific, so it's left open rather than guessed at.
+Jumping to the session's terminal is the other obvious thing to put here, but
+resolving a pid to a window is terminal-specific, so it's left open rather than
+guessed at. The tty was briefly shown on the key as an identifier and pulled:
+`s002` says nothing at a glance, and once sessions have names it was answering
+a question nothing was asking.
 
 ## The context window
 

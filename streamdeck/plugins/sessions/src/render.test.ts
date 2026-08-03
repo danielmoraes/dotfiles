@@ -47,11 +47,6 @@ test("a named session in a plain checkout still shows its repo", () => {
   expect(svg).toMatch(/font-size="13"[^>]*>steward</)
 })
 
-test("the terminal rides along, so a key leads back to a window", () => {
-  expect(renderSlot({ ...RUNNING, terminal: "s002" })).toContain(">s002<")
-  expect(renderSlot(RUNNING)).not.toContain(">s002<")
-})
-
 test("the key spends no pixels restating the state as a word", () => {
   const svg = renderSlot(RUNNING)
   for (const word of ["RUNNING", "IDLE", "PERMIT", "RUN", "ACT"]) {
@@ -73,13 +68,23 @@ test("the orbit moves with the frame, and the still key doesn't", () => {
   expect(renderSlot(idle, 0)).toBe(renderSlot(idle, 7))
 })
 
-test("elapsed and start time share the bottom line", () => {
-  expect(renderSlot(RUNNING)).toContain(">21m · 16:06<")
+test("the bottom line leads with elapsed, at a size you can read", () => {
+  const svg = renderSlot(RUNNING)
+  // How long it has been going is the question; the clock time is a footnote.
+  expect(svg).toMatch(/font-size="16"[^>]*>21m</)
+  expect(svg).toMatch(/font-size="11"[^>]*>16:06</)
+})
+
+test("secondary text is bright, not a mid grey on a dark key", () => {
+  const svg = renderSlot({ ...RUNNING, name: "stream deck" })
+  expect(svg, "the unreadable first-cut grey is back").not.toContain("#6B7280")
+  expect(svg).toMatch(/fill="#C6D0DC"[^>]*>steward</)
 })
 
 test("a session with no start time still shows what it has", () => {
   const svg = renderSlot({ ...RUNNING, startedAt: undefined })
-  expect(svg).toContain(">21m<")
+  expect(svg).toMatch(/font-size="16"[^>]*>21m</)
+  expect(svg).not.toContain(">16:06<")
 })
 
 test("context over 100% is told truthfully but drawn clamped", () => {

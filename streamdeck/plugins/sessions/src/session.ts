@@ -28,8 +28,6 @@ export type Slot = {
   elapsedSec?: number
   /** Local `HH:MM` the session started at. */
   startedAt?: string
-  /** Short terminal name, e.g. `s002`. */
-  terminal?: string
 }
 
 /** Trailing path segment that marks a Claude Code worktree checkout. */
@@ -123,8 +121,6 @@ export function startedLabel(
 export type Extras = {
   /** Percentage of the context window used; see `context.ts`. */
   contextPercent?: number
-  /** Short terminal name; see `local.terminalOf`. */
-  terminal?: string
 }
 
 export function toSlot(
@@ -137,7 +133,6 @@ export function toSlot(
     repo,
     name: session.name,
     worktree,
-    terminal: extras.terminal,
     state: slotState(session.status),
     contextPercent: extras.contextPercent,
     elapsedSec:

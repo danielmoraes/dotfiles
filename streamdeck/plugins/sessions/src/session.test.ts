@@ -88,11 +88,7 @@ test("the name and the state come off the record itself", () => {
   expect(slot.state).toBe("awaiting")
 })
 
-test("context and terminal are passed in, not read from the record", () => {
-  const slot = toSlot({ pid: 1, sessionId: "s" }, 0, {
-    contextPercent: 28.1,
-    terminal: "s002",
-  })
+test("context is passed in, not read from the record", () => {
+  const slot = toSlot({ pid: 1, sessionId: "s" }, 0, { contextPercent: 28.1 })
   expect(slot.contextPercent).toBe(28.1)
-  expect(slot.terminal).toBe("s002")
 })

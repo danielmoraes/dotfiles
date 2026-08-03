@@ -51,14 +51,24 @@ const BAR_RIGHT = RIGHT - 36
  * between the second line and the bar — the rows had been placed one at a time
  * rather than spaced against each other.
  */
-const ROW = { heading: 44, sub: 66, bar: 86, foot: 120 }
+const ROW = { heading: 44, sub: 66, bar: 86, foot: 122 }
 /** Bar thickness. */
 const BAR_H = 7
 
 const BG = "#16191F"
 const PANEL_FILL = "#1F242C"
 const WHITE = "#FFFFFF"
-const DIM = "#6B7280"
+/**
+ * Secondary text.
+ *
+ * Deliberately bright. The first cut used a mid grey (#6B7280), which is a fine
+ * "quiet" colour on a white page and unreadable on a dark key seen from arm's
+ * length across a lit desk. Secondary here means "smaller and later", not
+ * "faded".
+ */
+const SUB = "#C6D0DC"
+/** Tertiary — the one thing allowed to recede, since it's the least useful. */
+const FAINT = "#93A1B2"
 const TRACK = "#2A2F3A"
 
 /** Bar colours, the same ladder the cswap dial uses: blue quiet, red loud. */
@@ -124,12 +134,12 @@ function text(
  * worse than no marker at all. Six drawn primitives always render.
  */
 function branchGlyph(x: number, y: number): string {
-  const stroke = `stroke="${DIM}" stroke-width="1.4" fill="none"`
+  const stroke = `stroke="${FAINT}" stroke-width="1.4" fill="none"`
   return [
     `<path d="M${x} ${y - 4} V${y + 4}" ${stroke} stroke-linecap="round"/>`,
     `<path d="M${x} ${y} Q${x + 3} ${y} ${x + 5} ${y - 3}" ${stroke} stroke-linecap="round"/>`,
-    `<circle cx="${x}" cy="${y + 5}" r="1.6" fill="${DIM}"/>`,
-    `<circle cx="${x + 6}" cy="${y - 4}" r="1.6" fill="${DIM}"/>`,
+    `<circle cx="${x}" cy="${y + 5}" r="1.6" fill="${FAINT}"/>`,
+    `<circle cx="${x + 6}" cy="${y - 4}" r="1.6" fill="${FAINT}"/>`,
   ].join("")
 }
 
@@ -208,27 +218,27 @@ function svg(body: string): string {
  * de-duplicates it.
  */
 export function renderSlot(slot: Slot, frame = 0): string {
-  const bottom = [elapsedLabel(slot.elapsedSec), slot.startedAt]
-    .filter((part): part is string => part !== undefined)
-    .join(" · ")
+  const elapsed = elapsedLabel(slot.elapsedSec)
 
   return svg(
     [
       border(slot, frame),
       identity(slot),
       slot.contextPercent === undefined ? "" : contextRow(slot.contextPercent),
-      bottom === ""
+      // How long it has been going is the question this row answers, so it
+      // gets the size. The clock time it started at is the same fact stated a
+      // duller way — it earns the leftover space on the right, and nothing
+      // more.
+      elapsed === undefined
         ? ""
-        : text(LEFT, ROW.foot, bottom, { size: 11, fill: DIM }),
-      // The terminal, far right of the bottom line: the one identifier that
-      // gets you from a key back to a window, in space nothing else wanted.
-      slot.terminal === undefined
-        ? ""
-        : text(RIGHT, ROW.foot, slot.terminal, {
-            size: 10,
-            fill: DIM,
-            anchor: "end",
+        : text(LEFT, ROW.foot, elapsed, {
+            size: 16,
+            fill: SUB,
+            weight: "600",
           }),
+      slot.startedAt === undefined
+        ? ""
+        : text(RIGHT, ROW.foot, slot.startedAt, { size: 11, fill: FAINT }),
     ].join(""),
   )
 }
@@ -254,7 +264,7 @@ function identity(slot: Slot): string {
     // rather than the smallest one that fits.
     return (
       heading(slot.name) +
-      text(LEFT, ROW.sub, truncate(slot.repo, 15), { size: 13, fill: DIM })
+      text(LEFT, ROW.sub, truncate(slot.repo, 15), { size: 13, fill: SUB })
     )
   }
   return (
@@ -266,7 +276,7 @@ function identity(slot: Slot): string {
       : branchGlyph(LEFT + 3, ROW.sub - 4) +
         text(LEFT + 13, ROW.sub, truncate(slot.worktree, 16), {
           size: 11,
-          fill: DIM,
+          fill: SUB,
         }))
   )
 }
