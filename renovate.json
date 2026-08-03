@@ -39,6 +39,11 @@
       "automerge": true
     },
     {
+      "description": "Automerge pnpm / packageManager bumps once CI passes.",
+      "matchDepTypes": ["packageManager"],
+      "automerge": true
+    },
+    {
       "description": "Never automerge major updates.",
       "matchUpdateTypes": ["major"],
       "automerge": false
