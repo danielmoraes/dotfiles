@@ -1,7 +1,7 @@
 # cswap (Claude Accounts)
 
 Every managed Claude account's usage limits on the touch strip, the active one
-marked, and one press to switch between them. Lives on **D2**.
+marked, and one press to switch between them. Lives on **D1**.
 
 ```
 5H WINDOW                    3h 59m
@@ -16,10 +16,12 @@ marked, and one press to switch between them. Lives on **D2**.
 
 ## Why this exists
 
-D1 (AgentDeck) and D2 (AI Usage Limits, previously) both showed the quota of
-whichever account you happen to be signed in as — the same number twice, from
-two daemons. Neither could see the _other_ account, which is the thing actually
-worth a dial when you run two.
+Two dials here (AgentDeck's Claude gauge and AI Usage Limits) both showed the
+quota of whichever account you happen to be signed in as — the same number
+twice, from two daemons. Neither could see the _other_ account, which is the
+thing actually worth a dial when you run two. Both are gone; this took their
+place, covering the signed-in account as one row of several, and needs no
+daemon at all.
 
 ## Where the data comes from
 
@@ -41,8 +43,9 @@ It's invoked by absolute path (`~/.local/bin/cswap`) because the Stream Deck app
 runs under launchd with a four-entry `PATH`. The binary itself is fine to exec
 from there: it's a uv tool shim whose shebang points at an absolute interpreter.
 
-**AgentDeck was the obvious thing to fork** — it's MIT, and D1 is already its
-dial. It has no multi-account concept at all: its integration model is one
+**AgentDeck was the obvious thing to fork** — it's MIT, and it already ran the
+dial this replaced, plus page 1's session keys, which it still does. But it has
+no multi-account concept at all: its integration model is one
 linked account per _provider_ (Claude Code, Codex, OpenClaw…), each reading
 whatever that CLI is currently signed into. Adopting its Swift daemon and bridge
 protocol to add what cswap already answers in one JSON call wasn't worth it.

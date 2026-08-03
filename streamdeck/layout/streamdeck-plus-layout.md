@@ -20,34 +20,36 @@ Legend: `[K1]…[K8]` keys, `(D1)…(D4)` dials. `→` = press, `⟳` = rotate.
 ## Dials (every page)
 
 ```
-(D1) Claude usage      (D2) Claude accounts (D3) —               (D4) System volume
-     AgentDeck               cswap                open                 media keys
+(D1) Claude accounts   (D2) —               (D3) —               (D4) System volume
+     cswap                  open                 open                 media keys
 ```
 
-- **D1 Claude usage** — AgentDeck gauge. ⟳ cycles the window: both → 5h → 7d →
-  session · → refresh. The "session" rotation shows live token counts for a
-  session bridged through the `agentdeck` CLI wrapper specifically — it reads
-  0/0 for sessions started as plain `claude`, which is how these actually run;
-  the other three rotations (aggregated from Claude Code's own local usage
-  logs, not the daemon) aren't affected.
-- **D2 Claude accounts** — `com.dmoraes.cswap.accounts`: a row per managed
+- **D1 Claude accounts** — `com.dmoraes.cswap.accounts`: a row per managed
   account with its usage bar, the active one marked by a filled dot. ⟳ changes
-  the window (5h → 7d → spend) · → switches account. Like D1 it's a Claude
-  quota readout and doesn't need the AgentDeck daemon, but it's the only one
-  that can see an account you're _not_ signed in as. See the
+  the window (5h → 7d → spend) · → switches account. See the
   [plugin README](../plugins/cswap/README.md).
 - **D4 System volume** — macOS's hardware media-key path (Elgato's built-in
   "Multimedia" action, not a plugin), not AgentDeck's dial. ⟳ volume · → mute.
 
-D2 previously held **AI Usage Limits** (`com.len.limits.progress`), taken on as
-a second, daemon-independent readout. It was a duplicate: it and D1 both report
-the quota of whichever account is currently signed in, so two of the four dials
-answered the same question. Running two accounts makes the useful question
-"how much is left on the _other_ one, and can I jump to it" — which is what the
-slot does now.
+Two dials for two jobs, and two slots left open rather than filled for the sake
+of it. Three Claude-quota dials have been through here:
 
-D3 is open, not filled with something for the sake of it. Two things were
-tried there and pulled:
+- **AgentDeck's gauge** (`option-dial`) — the original D1. ⟳ cycled both → 5h →
+  7d → session. Dropped once `cswap` landed: it only ever showed the account
+  you're signed in as, which `cswap` covers as one row of several. Its
+  "session" rotation was already dead weight — it reads 0/0 unless the session
+  was started through the `agentdeck` CLI wrapper, and these start as plain
+  `claude`.
+- **AI Usage Limits** (`com.len.limits.progress`) — taken on as a
+  daemon-independent second readout, dropped for the same duplication.
+- **cswap** — what's left. The useful question when you run two accounts is
+  "how much is left on the _other_ one, and can I jump to it", which is the one
+  neither of the others could answer.
+
+Dropping AgentDeck's gauge also takes its daemon out of the dial strip
+entirely: page 1's session keys still need it, but nothing here does.
+
+Two more things were tried in the open slots and pulled:
 
 - **Launcher** (AgentDeck) — not reached for, same reasoning as the old launch
   keys.
@@ -65,8 +67,9 @@ tried there and pulled:
   listener, which is what would have actually worked. A genuine Focus@Will
   bug, not fixable from the Stream Deck side.
 
-Only D1 depends on the AgentDeck daemon; D2 and D4 keep working if it's down.
-Only Claude runs here, so AgentDeck's Codex gauge is gone entirely — the
+No dial depends on the AgentDeck daemon any more, so the whole strip keeps
+working if it's down. Only Claude runs here, so AgentDeck's Codex gauge is
+gone entirely too — the
 plugin fixes each dial's role to its action UUID (`option-dial` = Claude,
 `iterm-dial` = Codex, `utility-dial` = volume), so Codex's slot couldn't be
 repointed at anything else and had to go. System volume moved off

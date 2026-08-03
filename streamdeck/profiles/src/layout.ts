@@ -144,14 +144,19 @@ const SYSTEM_VOLUME: Binding = {
  *
  * Dials are steady-state controls reached for without looking, unlike keys —
  * so unlike the keys, which are meant to change per page, the same four dials
- * should mean the same thing everywhere. D3 is open, not filled for its own
- * sake — two things were tried there and pulled:
+ * should mean the same thing everywhere. Only two are bound: one Claude quota
+ * readout and system volume. The rest are open, not filled for their own sake —
+ * everything tried there has been pulled:
  *
  * - AgentDeck's Codex gauge is gone: only Claude runs here, and the plugin
  *   hardcodes each dial's role to its action UUID (`option-dial` = Claude,
- *   `iterm-dial` = Codex), so it can't be repointed. The remaining Claude
- *   gauge covers every window on its own — rotating cycles both → 5h → 7d →
- *   session.
+ *   `iterm-dial` = Codex), so it can't be repointed.
+ * - AgentDeck's Claude gauge (`option-dial`) followed it once `cswap` landed.
+ *   It only ever showed the signed-in account, which `cswap` covers as one row
+ *   of several — so keeping it meant two dials answering the same question,
+ *   the exact duplication that cost AI Usage Limits its slot. Dropping it also
+ *   takes the AgentDeck daemon out of the dial strip entirely: its session
+ *   keys on page 1 still need the daemon, but nothing here does.
  * - The Launcher dial went the way of the old launch keys: not reached for.
  * - A generic media-transport dial (`actionIdx: 22` on the same built-in
  *   `system.multimedia` action as `SYSTEM_VOLUME`) doesn't reach Focus@Will.
@@ -167,22 +172,15 @@ const SYSTEM_VOLUME: Binding = {
  *   it can reach the app's own `globalShortcut.register("MediaPlayPause", …)`
  *   listener, which is what would have actually worked. This is a Focus@Will
  *   bug, not fixable from the Stream Deck side.
- * - D2 held AI Usage Limits' quota gauge for a while, as a second readout that
- *   didn't depend on the AgentDeck daemon. It was a duplicate in the end: both
- *   it and D1 show the *signed-in* account's quota and nothing else, so the
- *   two dials answered the same question twice. It's now the `cswap` dial,
- *   which answers the question D1 can't — how much is left on *each* account,
- *   which one is active, and switch between them — while still standing in as
- *   the daemon-independent readout, since it shells out to a CLI rather than
- *   talking to AgentDeck.
+ * - AI Usage Limits' quota gauge held a slot for a while, as a readout that
+ *   didn't depend on the AgentDeck daemon. Same duplication: it showed the
+ *   signed-in account's quota and nothing else.
+ *
+ * What's left on D1 is `cswap`, which answers what none of them could — how
+ * much is left on *each* account, which one is active, and switching between
+ * them — and needs no daemon, since it shells out to a CLI.
  */
 const DIAL_STRIP: (Binding | null)[] = [
-  {
-    kind: "plugin",
-    plugin: AGENTDECK,
-    action: "bound.serendipity.agentdeck.option-dial",
-    name: "Claude Usage",
-  },
   {
     kind: "plugin",
     plugin: CSWAP,
@@ -201,6 +199,10 @@ const DIAL_STRIP: (Binding | null)[] = [
       labels: { "1": "personal", "2": "work" },
     },
   },
+  // D2 and D3 both open. Volume stays on D4 rather than sliding left to close
+  // the gap: it's the one dial with real muscle memory, and it sits under the
+  // hand that reaches for it.
+  null,
   null,
   SYSTEM_VOLUME,
 ]

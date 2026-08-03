@@ -120,10 +120,10 @@ test("the blank Default page exists but is not in the visible cycle", () => {
 })
 
 test("every page fills all 8 keys; dials are the same subset everywhere", () => {
-  // Only 3 of 4 dials are filled today (Claude usage, cswap accounts, system
-  // volume) — D3 was tried (Launcher, then a media-transport dial) and pulled
-  // both times (see DIAL_STRIP's comment) rather than left holding a dead or
-  // broken control. Keys have no such out: all 8 are always bound.
+  // Only 2 of 4 dials are filled today (cswap accounts, system volume).
+  // Everything tried in the gaps was pulled rather than left holding a dead,
+  // broken or duplicate control — see DIAL_STRIP's comment. Keys have no such
+  // out: all 8 are always bound.
   for (const page of PAGES) {
     const { keypad, encoder } = controllers(pageManifest(page))
     expect(Object.keys(keypad).length, `${page.title} keys`).toBe(
@@ -131,7 +131,6 @@ test("every page fills all 8 keys; dials are the same subset everywhere", () => 
     )
     expect(Object.keys(encoder).sort(), `${page.title} dials`).toEqual([
       "0,0",
-      "1,0",
       "3,0",
     ])
   }
@@ -189,18 +188,41 @@ test("multimedia dials are Elgato's built-in system action, unscoped to a plugin
   expect(d4.Settings.actionIdx).toBe(18)
 })
 
-test("D2 is the cswap accounts dial, not a second single-account gauge", () => {
-  // D1 (AgentDeck) already shows the signed-in account's quota. D2 previously
-  // showed the same thing via another plugin; it earns its slot by covering
-  // what D1 can't — every account at once, and switching between them.
+test("D1 is the cswap accounts dial, and it's the only quota readout", () => {
+  // Two other plugins held a dial showing the *signed-in* account's quota
+  // (AgentDeck's gauge, then AI Usage Limits). Both were dropped as duplicates
+  // of each other and of this, which covers every account and switches between
+  // them. A second quota dial reappearing is the regression worth catching.
   const { encoder } = controllers(pageManifest(PAGES[0]!))
-  const d2 = encoder["1,0"]
-  if (!isRecord(d2) || !isRecord(d2.Plugin)) {
-    throw new Error("expected a plugin action at D2")
+  const d1 = encoder["0,0"]
+  if (!isRecord(d1) || !isRecord(d1.Plugin)) {
+    throw new Error("expected a plugin action at D1")
   }
-  expect(d2.UUID).toBe("com.dmoraes.cswap.accounts")
-  expect(d2.Plugin.UUID).toBe("com.dmoraes.cswap")
-  expect(d2.Encoder).toBeDefined()
+  expect(d1.UUID).toBe("com.dmoraes.cswap.accounts")
+  expect(d1.Plugin.UUID).toBe("com.dmoraes.cswap")
+  expect(d1.Encoder).toBeDefined()
+
+  for (const entry of Object.values(encoder)) {
+    if (isRecord(entry) && isRecord(entry.Plugin)) {
+      expect(entry.Plugin.UUID, "a second plugin dial is back").toBe(
+        "com.dmoraes.cswap",
+      )
+    }
+  }
+})
+
+test("no dial depends on the AgentDeck daemon", () => {
+  // Its session keys on page 1 still do, deliberately — but the dial strip is
+  // meant to keep working when the daemon is down, which is what cost
+  // AgentDeck's own volume dial its slot earlier.
+  for (const page of PAGES) {
+    const { encoder } = controllers(pageManifest(page))
+    for (const entry of Object.values(encoder)) {
+      if (isRecord(entry)) {
+        expect(String(entry.UUID), `${page.title}`).not.toMatch(/agentdeck/)
+      }
+    }
+  }
 })
 
 test("the dial strip is identical on every page", () => {

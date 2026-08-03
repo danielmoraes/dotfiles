@@ -8,7 +8,7 @@ Stream Deck app 6.9+).
 
 | #   | Plugin                     | UUID                          | Used on          | Source                                                                                    | SDK   |
 | --- | -------------------------- | ----------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | ----- |
-| 1   | **AgentDeck**              | `bound.serendipity.agentdeck` | P1 K1–K7, D1     | [puritysb/AgentDeck](https://github.com/puritysb/AgentDeck)                               | ✅ v3 |
+| 1   | **AgentDeck**              | `bound.serendipity.agentdeck` | P1 K1–K7         | [puritysb/AgentDeck](https://github.com/puritysb/AgentDeck)                               | ✅ v3 |
 | 4   | **Essentials for Spotify** | `com.ntanis-dev…`             | P3 K5/K6         | [ntanis-dev/essentials-for-spotify](https://github.com/ntanis-dev/essentials-for-spotify) | ✅ v3 |
 | 6   | **github-stats**           | `com.dmoraes.github-stats`    | P2 K1–K3         | [`github-stats/`](github-stats/) (this repo)                                              | ✅ v3 |
 | 7   | **slack-unread**           | `com.dmoraes.slack-unread`    | P2 K5            | [`slack-unread/`](slack-unread/README.md) (this repo)                                     | ✅ v3 |
@@ -16,34 +16,36 @@ Stream Deck app 6.9+).
 | 9   | **calendar**               | `com.dmoraes.calendar`        | P2 K6            | [`calendar/`](calendar/README.md) (this repo)                                             | ✅ v3 |
 | 10  | **commands**               | `com.dmoraes.commands`        | P1/P3 scripts    | [`commands/`](commands/) (this repo)                                                      | ✅ v3 |
 | 11  | **jira**                   | `com.dmoraes.jira`            | P2 K4            | [`jira/`](jira/) (this repo)                                                              | ✅ v3 |
-| 12  | **cswap**                  | `com.dmoraes.cswap`           | D2               | [`cswap/`](cswap/README.md) (this repo)                                                   | ✅ v3 |
+| 12  | **cswap**                  | `com.dmoraes.cswap`           | D1               | [`cswap/`](cswap/README.md) (this repo)                                                   | ✅ v3 |
 
 Action UUIDs for each are in
 [`../profiles/src/layout.ts`](../profiles/src/layout.ts) — that file is the only
 place they're referenced.
 
-**cswap** holds D2: usage limits for _every_ managed Claude account, which is
-active, and a press to switch. It's also the daemon-independent readout, since
-it shells out to the `cswap` CLI rather than talking to AgentDeck.
+**cswap** holds D1, and is the only Claude-quota dial left: usage limits for
+_every_ managed account, which is active, and a press to switch. Two dials that
+each showed only the signed-in account's quota (AgentDeck's gauge, then AI Usage
+Limits) were dropped as duplicates of it — so AgentDeck is now page-1 keys only,
+and no dial needs its daemon.
 
 **D4 (System volume)** isn't a plugin at all — it's Elgato's built-in
 `com.elgato.streamdeck.system.multimedia` system action, which sends real
 macOS media-key events instead of going through a plugin's own daemon or SDK.
-D3 is open: AgentDeck's Launcher wasn't reached for, and a media-transport
-dial tried in its place doesn't work against Focus@Will — confirmed a
-genuine Focus@Will bug, not an `actionIdx` guess gone wrong. See
+D2 and D3 are open: AgentDeck's Launcher wasn't reached for, and a
+media-transport dial tried in its place doesn't work against Focus@Will —
+confirmed a genuine Focus@Will bug, not an `actionIdx` guess gone wrong. See
 [`../layout/streamdeck-plus-layout.md`](../layout/streamdeck-plus-layout.md#dials-every-page)
 for both.
 
 ### Considered but not chosen
 
-- **AI Usage Limits** (`com.len.limits`) — held D2 for a while as a second,
-  daemon-independent quota gauge. Turned out to duplicate D1: both show the
-  quota of whichever account you're signed in as, so the two dials answered the
-  same question twice. Replaced by `cswap`, which answers the one D1 can't —
-  how much is left on _each_ account — and is equally daemon-independent.
-- **Forking AgentDeck** to add multi-account support — it's MIT and already owns
-  D1, so it was the obvious base. But it has no multi-account concept anywhere:
+- **AI Usage Limits** (`com.len.limits`) and **AgentDeck's Claude gauge**
+  (`option-dial`) — both held a dial showing the quota of whichever account
+  you're signed in as, which meant two dials answering the same question, then
+  a third once `cswap` arrived. `cswap` covers that account as one row of
+  several and needs no daemon, so both were dropped.
+- **Forking AgentDeck** to add multi-account support — it's MIT and already ran
+  a dial here, so it was the obvious base. But it has no multi-account concept:
   its model is one linked account per _provider_, reading whatever that CLI is
   signed into. Adopting its Swift daemon and bridge protocol to add what the
   `cswap` CLI already answers in a single JSON call wasn't a good trade.
