@@ -148,7 +148,48 @@ function weeklyMetrics(canvas: Canvas): void {
   canvas.fill(union(bar(0.15, 0.6), bar(0.5, 0.34), bar(0.85, 0.08)), WHITE)
 }
 
+/** calendar: a month grid with the header bar filled. */
+function calendar(canvas: Canvas): void {
+  plate(canvas, BLUE)
+  const stroke = w(0.1)
+  const body = roundedRect(m(0.5), m(0.56), w(0.46), w(0.4), w(0.09))
+  canvas.fill(body, WHITE)
+  // Punch the page out of the frame, then lay the header band back over it.
+  canvas.fill(
+    roundedRect(m(0.5), m(0.6), w(0.46) - stroke, w(0.4) - stroke, w(0.05)),
+    BLUE,
+  )
+  canvas.fill(
+    union(
+      path(
+        [
+          [m(0.06), m(0.3)],
+          [m(0.94), m(0.3)],
+        ],
+        stroke * 1.6,
+      ),
+      // Binder rings.
+      path(
+        [
+          [m(0.3), m(0.06)],
+          [m(0.3), m(0.2)],
+        ],
+        stroke,
+      ),
+      path(
+        [
+          [m(0.7), m(0.06)],
+          [m(0.7), m(0.2)],
+        ],
+        stroke,
+      ),
+    ),
+    WHITE,
+  )
+}
+
 export const MARKS: readonly Mark[] = [
+  { plugin: "com.dmoraes.calendar", draw: calendar },
   { plugin: "com.dmoraes.github-stats", draw: githubStats },
   { plugin: "com.dmoraes.slack-unread", draw: slackUnread },
   { plugin: "com.dmoraes.weekly-metrics", draw: weeklyMetrics },

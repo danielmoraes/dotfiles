@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Calendar",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "UUID": "com.dmoraes.calendar",
+  "Description": "Next meeting from the local macOS Calendar, with a countdown.",
+  "Category": "Calendar",
+  "CategoryIcon": "imgs/plugin/category",
+  "Icon": "imgs/plugin/icon",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": { "MinimumVersion": "6.9" },
+  "OS": [{ "Platform": "mac", "MinimumVersion": "12" }],
+  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "Next Meeting",
+      "UUID": "com.dmoraes.calendar.next-meeting",
+      "Icon": "imgs/actions/next-meeting/icon",
+      "Tooltip": "Show the next meeting and a countdown. Press to open Calendar.",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/next-meeting/key",
+          "TitleAlignment": "middle"
+        },
+        {
+          "Image": "imgs/actions/next-meeting/key-soon",
+          "TitleAlignment": "middle"
+        }
+      ]
+    }
+  ]
+}

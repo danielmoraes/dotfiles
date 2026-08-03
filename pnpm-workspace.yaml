@@ -4,6 +4,7 @@ packages:
   - "streamdeck/icons"
   - "streamdeck/profiles"
   - "streamdeck/secrets"
+  - "streamdeck/ical"
 
 # Single source of truth for versions shared across workspace packages.
 # Reference from a package.json as `"<name>": "catalog:"`.

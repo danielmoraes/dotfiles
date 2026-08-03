@@ -17,6 +17,7 @@ with one command.
 | [`plugins/`](plugins/README.md)                                        | Every plugin: what's installed, and the source of the three custom ones.          |
 | [`scripts/`](scripts/README.md)                                        | TypeScript `sd-*` commands that keys call — typed, unit-tested.                   |
 | [`secrets/`](secrets/src/index.ts)                                     | Loads `~/.config/streamdeck/secrets.env` for plugins and scripts.                 |
+| [`ical/`](ical/src/index.ts)                                           | Reads the local macOS Calendar via `icalBuddy` (next meeting, weekly meetings).   |
 | [`icons/`](icons/README.md)                                            | Icon style, and the generator for the PNG plugin icons.                           |
 | [`install.sh`](install.sh)                                             | Bootstrap: builds and links the scripts, scaffolds secrets, prints the checklist. |
 

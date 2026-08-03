@@ -52,7 +52,7 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
      (github-stats)       (github-stats)       (github-stats)       (JQL result)
 
 [K5] Slack unread     [K6] Next meeting    [K7] Slack status    [K8] Modes ▶
-     (slack-unread)       (ical)               (script)             (next page)
+     (slack-unread)       (calendar)           (script)             (next page)
 ```
 
 - **K1 PRs to review** — `is:open is:pr review-requested:@me`; red at ≥ 1.
@@ -62,7 +62,9 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 - **K4 Jira** — `streamdeck-jira` JQL result count. Set the JQL in its
   Property Inspector.
 - **K5 Slack unread** — unread mentions + DMs; red at ≥ 1. Press opens Slack.
-- **K6 Next meeting** — `stream-deck-ical`; title + countdown, colour escalates.
+- **K6 Next meeting** — local macOS Calendar via the `calendar` plugin; title +
+  countdown, amber inside 10 minutes. No feed URL or token — see its README for
+  why an `.ics` feed wasn't viable.
 - **K7 Slack status** — `sd-slack-status` cycles 🟢 available → 🔴 focus →
   🍽 lunch → clear. Pass a preset name to jump straight to one.
 
@@ -83,7 +85,8 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 - **K1 Focus mode** — `sd-focus-mode`: macOS Focus, Slack status, focus playlist.
 - **K2 Meeting mode** — `sd-meeting-mode`: mute mic, DND, pause music.
 - **K3 Quick capture** — `sd-quick-capture`: append to your inbox / open an issue.
-- **K4 Weekly metrics** — press cycles coding hours → PRs merged → meetings.
+- **K4 Weekly metrics** — press cycles coding hours → PRs merged → meetings
+  (meetings also come from the local calendar).
 - **K5/K6 Spotify** — `essentials-for-spotify`.
 - **K7 Standup** — `sd-standup`: yesterday's merged PRs and commits to the clipboard.
 

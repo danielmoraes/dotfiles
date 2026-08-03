@@ -46,10 +46,10 @@ const AI_LIMITS: PluginRef = {
   uuid: "com.len.limits",
   version: "0.1.19.0",
 }
-const ICAL: PluginRef = {
-  name: "iCal",
-  uuid: "com.pedrofuentes.ical",
-  version: "2.4.5.0",
+const CALENDAR: PluginRef = {
+  name: "Calendar",
+  uuid: "com.dmoraes.calendar",
+  version: "0.1.0.0",
 }
 const JIRA: PluginRef = {
   name: "Jira",
@@ -203,9 +203,10 @@ const WORK: Page = {
     },
     {
       kind: "plugin",
-      plugin: ICAL,
-      action: "com.pedrofuentes.ical.nextmeeting",
+      plugin: CALENDAR,
+      action: "com.dmoraes.calendar.next-meeting",
       name: "Next Meeting",
+      settings: { warnMinutes: 10, refreshSeconds: 60 },
     },
     run("sd-slack-status", "Status"),
     { kind: "nextPage", title: "Modes ▶" },
