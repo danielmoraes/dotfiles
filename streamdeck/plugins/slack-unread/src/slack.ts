@@ -1,58 +1,56 @@
+import { readFileSync } from "node:fs"
+import { homedir } from "node:os"
+import { join } from "node:path"
+
 /**
- * Pure Slack data helpers. No Stream Deck dependencies so they can be unit
- * tested with an injected `fetchImpl`.
+ * Read Slack's unread badge from the desktop app's own persisted state.
+ *
+ * The obvious approach — `users.counts` — is closed: it returns
+ * `not_allowed_token_type` for modern `xoxp-` tokens, and the legacy `client`
+ * scope it wants can't be granted to apps created today. The public
+ * `conversations.*` methods have no unread concept; reconstructing one means a
+ * `last_read` lookup plus a history scan per conversation, which is hundreds of
+ * calls against a 50/min tier.
+ *
+ * The Slack desktop app already computes exactly the number we want for its own
+ * dock badge and persists it to a plain JSON file. Reading that costs nothing,
+ * needs no token, no network, and no macOS privacy grant.
+ *
+ * The trade: it's an undocumented file that a Slack update could reshape, and
+ * it only reflects reality while the desktop app is running. Both fail soft —
+ * the key shows a dash rather than a wrong number.
  */
 
-export type FetchResponse = {
-  ok: boolean
-  status: number
-  json: () => Promise<unknown>
-}
+export const SLACK_STATE_PATH = join(
+  homedir(),
+  "Library",
+  "Application Support",
+  "Slack",
+  "storage",
+  "root-state.json",
+)
 
-/** Minimal fetch shape so tests can inject a mock without DOM lib types. */
-export type FetchLike = (
-  url: string,
-  init?: { headers?: Record<string, string> },
-) => Promise<FetchResponse>
-
-export type SlackOptions = {
-  /** API base, no trailing slash. Defaults to https://slack.com/api. */
-  apiBase?: string
-  token?: string
-  fetchImpl?: FetchLike
-}
-
-/** Unread work, split by where it came from. */
+/** Unread work, as Slack itself counts it. */
 export type Unread = {
-  /** Unread direct messages. */
-  dms: number
-  /** @-mentions in channels, private channels and group DMs. */
-  mentions: number
-  /** Unread replies in threads you follow. */
-  threads: number
-  /** Everything above — what the key shows by default. */
-  total: number
+  /** Badge number: DMs plus mentions, summed across workspaces. */
+  unreads: number
+  /** The mention/highlight subset of `unreads`. */
+  highlights: number
+  /** Any workspace has unread channel activity that doesn't earn a badge. */
+  bullet: boolean
+  /** How many workspaces were found — 0 means the file wasn't usable. */
+  workspaces: number
 }
 
-const DEFAULT_BASE = "https://slack.com/api"
+/** How the state file is read; injectable so parsing is testable. */
+export type ReadFile = (path: string) => string
 
-/**
- * Requests are bounded: a hung connection would otherwise leave the key blank
- * forever — `render` awaits this, so not even the `!` error state would paint.
- */
-const FETCH_TIMEOUT_MS = 10_000
-
-const defaultFetch: FetchLike = async (url, init) => {
-  const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS)
-  const res = await fetch(url, { ...init, signal })
-  return { ok: res.ok, status: res.status, json: () => res.json() }
-}
+const readFile: ReadFile = (path) => readFileSync(path, "utf8")
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
-/** Read a numeric field, treating anything non-numeric as 0. */
 function num(source: unknown, key: string): number {
   if (!isRecord(source)) {
     return 0
@@ -61,73 +59,95 @@ function num(source: unknown, key: string): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0
 }
 
-/** Sum `key` across a list of conversation entries. */
-function sumBy(list: unknown, key: string): number {
-  if (!Array.isArray(list)) {
-    return 0
-  }
-  return list.reduce<number>((total, entry) => total + num(entry, key), 0)
+export type UnreadOptions = {
+  /** Override the state file location (testing). */
+  path?: string
+  /** Restrict to these workspace/team ids; all workspaces when omitted. */
+  teams?: readonly string[]
+  readFileImpl?: ReadFile
 }
 
 /**
- * Fetch unread counts via `users.counts`.
+ * Parse the desktop app's state.
  *
- * This is the endpoint Slack's own clients use for the badge, and the only one
- * that returns per-conversation unread state in a single request — the public
- * `conversations.*` methods would need one call per conversation. It needs a
- * **user** token (`xoxp-`), not a bot token.
+ * Shape: `webapp.teams.<TEAM_ID>.unreads = { unreads, unreadHighlights,
+ * showBullet }`, one entry per signed-in workspace.
  */
-export async function unreadCounts(opts: SlackOptions = {}): Promise<Unread> {
-  const base = opts.apiBase ?? DEFAULT_BASE
-  const fetchImpl = opts.fetchImpl ?? defaultFetch
-  const res = await fetchImpl(`${base}/users.counts?mpim_aware=true`, {
-    headers: {
-      Authorization: `Bearer ${opts.token ?? ""}`,
-      "User-Agent": "streamdeck-slack-unread",
-    },
-  })
-  if (!res.ok) {
-    throw new Error(`Slack users.counts failed: HTTP ${res.status}`)
+export function parseUnread(
+  contents: string,
+  teams?: readonly string[],
+): Unread {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(contents)
+  } catch {
+    throw new Error("Slack state file is not valid JSON")
   }
-  const body = await res.json()
-  if (!isRecord(body) || body.ok !== true) {
-    // Slack signals failure in the body with `ok: false` and an `error` slug.
-    const reason =
-      isRecord(body) && typeof body.error === "string" ? body.error : "unknown"
-    throw new Error(`Slack users.counts failed: ${reason}`)
+  if (!isRecord(parsed) || !isRecord(parsed.webapp)) {
+    throw new Error("Slack state file has an unexpected shape")
+  }
+  const byTeam = parsed.webapp.teams
+  if (!isRecord(byTeam)) {
+    throw new Error("Slack state file has no workspaces")
   }
 
-  // `ims` carry a whole-conversation unread count (every DM is "for you");
-  // channels only count explicit @-mentions, which is what's worth a key.
-  const dms = sumBy(body.ims, "dm_count")
-  const mentions =
-    sumBy(body.channels, "mention_count") +
-    sumBy(body.groups, "mention_count") +
-    sumBy(body.mpims, "mention_count")
-  const threads = num(body.threads, "mention_count")
-
-  return { dms, mentions, threads, total: dms + mentions + threads }
+  let unreads = 0
+  let highlights = 0
+  let bullet = false
+  let workspaces = 0
+  for (const [id, team] of Object.entries(byTeam)) {
+    if (teams && teams.length > 0 && !teams.includes(id)) {
+      continue
+    }
+    if (!isRecord(team) || !isRecord(team.unreads)) {
+      continue
+    }
+    workspaces++
+    unreads += num(team.unreads, "unreads")
+    highlights += num(team.unreads, "unreadHighlights")
+    bullet = bullet || team.unreads.showBullet === true
+  }
+  if (workspaces === 0) {
+    throw new Error("Slack state file listed no readable workspaces")
+  }
+  return { unreads, highlights, bullet, workspaces }
 }
 
-/** Which parts of `Unread` a key should add up. */
-export type UnreadParts = {
-  dms?: boolean
-  mentions?: boolean
-  threads?: boolean
+/** Read and parse the desktop app's unread state. */
+export function unreadCounts(opts: UnreadOptions = {}): Unread {
+  const path = opts.path ?? SLACK_STATE_PATH
+  const read = opts.readFileImpl ?? readFile
+  let contents: string
+  try {
+    contents = read(path)
+  } catch {
+    throw new Error(`Slack state file not found at ${path}`)
+  }
+  return parseUnread(contents, opts.teams)
 }
 
-/** Sum the enabled parts; with nothing selected, fall back to the total. */
-export function selectCount(unread: Unread, parts: UnreadParts = {}): number {
-  const anySelected =
-    parts.dms === true || parts.mentions === true || parts.threads === true
-  if (!anySelected) {
-    return unread.total
+/** Which part of `Unread` a key should show. */
+export type UnreadMode = "all" | "highlights"
+
+/**
+ * The number for the key.
+ *
+ * `all` is the badge Slack itself shows; `highlights` narrows to mentions.
+ */
+export function selectCount(unread: Unread, mode: UnreadMode = "all"): number {
+  return mode === "highlights" ? unread.highlights : unread.unreads
+}
+
+/**
+ * Key title: the count, or a bullet when there's unread channel activity that
+ * doesn't warrant a badge — which is what Slack's own sidebar shows.
+ */
+export function formatTitle(unread: Unread, mode: UnreadMode = "all"): string {
+  const n = selectCount(unread, mode)
+  if (n > 0) {
+    return String(n)
   }
-  return (
-    (parts.dms === true ? unread.dms : 0) +
-    (parts.mentions === true ? unread.mentions : 0) +
-    (parts.threads === true ? unread.threads : 0)
-  )
+  return unread.bullet ? "•" : "0"
 }
 
 /** Two-state key helper: 0 = quiet, 1 = attention (count at/above threshold). */

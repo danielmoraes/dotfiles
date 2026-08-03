@@ -4,34 +4,41 @@ import streamDeck, {
   type WillAppearEvent,
   type WillDisappearEvent,
 } from "@elgato/streamdeck"
-import { countState, selectCount, unreadCounts } from "../slack"
+import {
+  type UnreadMode,
+  countState,
+  formatTitle,
+  selectCount,
+  unreadCounts,
+} from "../slack"
 
 export type UnreadCountSettings = {
-  /** User OAuth token (`xoxp-`); falls back to SLACK_TOKEN for local dev. */
-  token?: string
-  /** Override API base (testing). */
-  apiBase?: string
+  /** `all` = Slack's own badge (DMs + mentions); `highlights` = mentions only. */
+  mode?: string
+  /** Restrict to these workspace/team ids; all workspaces when omitted. */
+  teams?: string[]
   /** Count at/above which the key flips to the "attention" state. */
   warnAt?: number
-  /** Seconds between refreshes. Slack's rate limit is generous; 60s is plenty. */
+  /** Seconds between refreshes. Reading a local file is cheap. */
   refreshSeconds?: number
-  /** URL opened on key press. Defaults to the Slack desktop app. */
+  /** URL opened on key press. */
   openUrl?: string
-  /** Which unread buckets to add up. All off = the combined total. */
-  countDms?: boolean
-  countMentions?: boolean
-  countThreads?: boolean
+  /** Override the Slack state file location (testing). */
+  statePath?: string
 }
 
-const DEFAULT_REFRESH_SECONDS = 60
+const DEFAULT_REFRESH_SECONDS = 30
 const DEFAULT_OPEN_URL = "slack://open"
 
+function modeOf(settings: UnreadCountSettings): UnreadMode {
+  return settings.mode === "highlights" ? "highlights" : "all"
+}
+
 /**
- * Unread Slack mentions/DMs on a key, polled on a timer.
+ * Unread Slack mentions/DMs on a key, read from the desktop app's own state.
  *
- * Unlike the GitHub keys — which can refresh on appear/press because their
- * counts move slowly — Slack unreads are the thing you want to glance at, so
- * this polls in the background and keeps the key live.
+ * Polled rather than event-driven: the count is the thing you want to glance
+ * at, and re-reading a small local JSON file every 30s costs nothing.
  */
 export class UnreadCount extends SingletonAction<UnreadCountSettings> {
   override manifestId = "com.dmoraes.slack-unread.unread-count"
@@ -80,7 +87,7 @@ export class UnreadCount extends SingletonAction<UnreadCountSettings> {
     this.clear(action.id)
     const seconds = Math.max(
       settings.refreshSeconds ?? DEFAULT_REFRESH_SECONDS,
-      15,
+      5,
     )
     const timer = setInterval(() => {
       void this.refresh(action, settings)
@@ -107,28 +114,22 @@ export class UnreadCount extends SingletonAction<UnreadCountSettings> {
     action: WillAppearEvent<UnreadCountSettings>["action"],
     settings: UnreadCountSettings,
   ): Promise<void> {
-    const token = settings.token || process.env.SLACK_TOKEN
-    if (!token) {
-      await action.setTitle("no\ntoken")
-      return
-    }
     try {
-      const unread = await unreadCounts({
-        apiBase: settings.apiBase,
-        token,
+      const unread = unreadCounts({
+        path: settings.statePath,
+        teams: settings.teams,
       })
-      const n = selectCount(unread, {
-        dms: settings.countDms,
-        mentions: settings.countMentions,
-        threads: settings.countThreads,
-      })
-      await action.setTitle(String(n))
+      const mode = modeOf(settings)
+      await action.setTitle(formatTitle(unread, mode))
       // setState only applies to keys; guard for dials/other controls.
       if ("setState" in action) {
-        await action.setState(countState(n, settings.warnAt ?? 1))
+        await action.setState(
+          countState(selectCount(unread, mode), settings.warnAt ?? 1),
+        )
       }
     } catch {
-      await action.setTitle("!")
+      // Slack not installed, not yet run, or the state file changed shape.
+      await action.setTitle("–")
     }
   }
 }

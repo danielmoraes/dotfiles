@@ -4,9 +4,9 @@ Stream Deck plugin: unread Slack mentions/DMs on a key (Page 2 · K5).
 
 ## Action
 
-| Action           | Controller | What it shows                                                                           |
-| ---------------- | ---------- | --------------------------------------------------------------------------------------- |
-| **Unread Count** | Keypad     | Combined unread count; flips to a red "attention" state at `warnAt`. Press opens Slack. |
+| Action           | Controller | What it shows                                                                                        |
+| ---------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| **Unread Count** | Keypad     | Slack's own badge number; `•` for unread channels with no badge; red at `warnAt`. Press opens Slack. |
 
 ## Settings
 
@@ -25,24 +25,37 @@ generated profile gives it. Anything left unset falls back to the environment
 
 ## How the count is read
 
-Slack has no public "give me my badge number" endpoint. The public
-`conversations.*` methods would need one request per conversation, so this uses
-`users.counts` — the endpoint Slack's own clients call for the unread badge. It
-returns every conversation's unread state in a single request.
+From the Slack **desktop app's own state file**, not the API:
 
-That endpoint is undocumented, so treat it as best-effort: it needs a user
-token, and Slack could change it. The plugin fails soft (the key shows `!`)
-rather than throwing.
+```
+~/Library/Application Support/Slack/storage/root-state.json
+  webapp.teams.<TEAM_ID>.unreads = { unreads, unreadHighlights, showBullet }
+```
 
-DMs count whole conversations (`dm_count` — every DM is addressed to you);
-channels and group DMs count only explicit `@`-mentions, which is what actually
-warrants a key.
+Summed across signed-in workspaces, this is exactly the number Slack puts on its
+dock badge — DMs plus mentions.
 
-## Token
+### Why not the API
 
-Create a user token with the `client` or `read` scope at
-[api.slack.com/apps](https://api.slack.com/apps), then put it in
-`~/.config/streamdeck/secrets.env` as `SLACK_TOKEN=` (git-ignored).
+- **`users.counts`** returns `not_allowed_token_type` for modern `xoxp-` tokens.
+  It wants the legacy `client` scope, which can't be granted to apps created
+  today. This plugin originally used it; it never worked.
+- **`conversations.*`** has no unread concept. Reconstructing one means a
+  `last_read` lookup plus a history scan _per conversation_ — hundreds of calls
+  against a 50/min tier, for a key that refreshes every 30 seconds.
+
+Reading the local file needs no token, no network, and no macOS privacy grant.
+
+**The trade-offs, stated plainly:** it's an undocumented file that a Slack update
+could reshape, and it only reflects reality while the desktop app is running.
+Both fail soft — the key shows `–`, never a confident wrong number. The parser
+throws rather than defaulting to zero if the shape changes.
+
+## No token needed
+
+This plugin reads a local file. `SLACK_TOKEN` in `~/.config/streamdeck/secrets.env`
+is still used by `sd-slack-status` and `sd-focus-mode`, which _set_ your status
+via `users.profile.set` — that endpoint does accept a modern user token.
 
 ## Develop
 

@@ -31,6 +31,9 @@ place they're referenced.
   disables the per-calendar secret address on managed domains, leaving only the
   _public_ address, so there is nothing safe to point it at. Replaced by the
   local-calendar `calendar` plugin above.
+- **Slack's `users.counts` API** — returns `not_allowed_token_type` for modern
+  `xoxp-` tokens; the legacy `client` scope it needs can't be granted any more.
+  `slack-unread` reads the desktop app's local state file instead.
 
 ## Custom plugins (this repo)
 
@@ -99,7 +102,7 @@ rc is visible to them.
 ```sh
 GITHUB_TOKEN=          # optional — falls back to `gh auth token`
 GITHUB_LOGIN=          # only for weekly-metrics' `commits` metric
-SLACK_TOKEN=           # user token (xoxp-), for slack-unread + sd-slack-status
+SLACK_TOKEN=           # user token (xoxp-), for sd-slack-status / sd-focus-mode
 WAKATIME_API_KEY=      # wakatime.com/settings/api-key
 JIRA_BASE_URL=         # https://yourorg.atlassian.net
 JIRA_EMAIL=
