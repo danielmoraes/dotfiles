@@ -39,7 +39,9 @@ export const ICALBUDDY_CANDIDATES = [
 const runCommand: Runner = (cmd, args) =>
   execFileSync(cmd, args, {
     encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
+    // stderr is piped, not discarded: when EventKit refuses for lack of a
+    // privacy grant, its complaint there is the only clue as to why.
+    stdio: ["ignore", "pipe", "pipe"],
     // A calendar store that needs to spin up CalDAV sync can be slow; bound it
     // so a key can't hang forever waiting to paint.
     timeout: 15_000,
@@ -142,15 +144,27 @@ export function localEvents(
     `eventsFrom:${isoDate(from)}`,
     `to:${isoDate(to)}`,
   ]
+  // Track *why* each candidate failed. "Not installed" and "installed but the
+  // call failed" need different fixes — the latter is almost always a missing
+  // Calendar privacy grant for whichever app spawned us — and collapsing both
+  // into one message sends you looking in the wrong place.
+  const failures: string[] = []
   for (const bin of opts.candidates ?? ICALBUDDY_CANDIDATES) {
     try {
       return parseEvents(runner(bin, args))
-    } catch {
-      // Not at this path, or it failed — try the next.
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (!/ENOENT|not found/i.test(message)) {
+        failures.push(`${bin}: ${message}`)
+      }
     }
   }
+  if (failures.length === 0) {
+    throw new Error("icalBuddy not installed — brew install ical-buddy")
+  }
   throw new Error(
-    "icalBuddy not found or not permitted (install: brew install ical-buddy)",
+    `icalBuddy ran but failed (likely no Calendar permission for the host app — ` +
+      `System Settings > Privacy & Security > Calendars). ${failures.join("; ")}`,
   )
 }
 
@@ -205,3 +219,18 @@ export function shortTitle(title: string, max = 14): string {
   const clean = title.replace(/\s+/g, " ").trim()
   return clean.length <= max ? clean : `${clean.slice(0, max - 1)}…`
 }
+
+// The package has a single entry point, so the `.ics` reader and the
+// source-selection wrapper are surfaced here rather than as deep imports.
+export {
+  type Event as IcsEvent,
+  countMeetings as countIcsMeetings,
+  eventsInRange,
+  parseIcsDate,
+} from "./ics"
+export {
+  type FetchText,
+  type SourceOptions,
+  calendarEvents,
+  clearFeedCache,
+} from "./source"

@@ -4,12 +4,14 @@ import streamDeck, {
   type WillAppearEvent,
   type WillDisappearEvent,
 } from "@elgato/streamdeck"
-import { localEvents } from "streamdeck-ical"
+import { calendarEvents } from "streamdeck-ical"
 import { nextMeetingFace } from "../render"
 
 export type NextMeetingSettings = {
   /** Restrict to these calendar names; all calendars when omitted. */
   calendars?: string[]
+  /** Private `.ics` feed. Falls back to the local calendar when unset. */
+  icalUrl?: string
   /** Minutes at/under which the key flips to the "imminent" state. */
   warnMinutes?: number
   /** Seconds between refreshes. */
@@ -91,7 +93,8 @@ export class NextMeeting extends SingletonAction<NextMeetingSettings> {
       // tomorrow's first meeting without reading the whole calendar.
       const horizon = new Date(now.getTime())
       horizon.setDate(horizon.getDate() + 2)
-      const events = localEvents(now, horizon, {
+      const events = await calendarEvents(now, horizon, {
+        icalUrl: settings.icalUrl || process.env.ICAL_URL,
         calendars: settings.calendars,
       })
       const face = nextMeetingFace(events, now, {
@@ -102,7 +105,12 @@ export class NextMeeting extends SingletonAction<NextMeetingSettings> {
       if ("setState" in action) {
         await action.setState(face.state)
       }
-    } catch {
+    } catch (error) {
+      // Log the cause: the key has room for two characters, but the plugin log
+      // can say whether icalBuddy is missing or the Calendar grant is.
+      streamDeck.logger.error(
+        `next-meeting failed: ${error instanceof Error ? error.message : String(error)}`,
+      )
       await action.setTitle("cal\n!")
     }
   }

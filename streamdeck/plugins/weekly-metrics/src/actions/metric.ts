@@ -1,4 +1,4 @@
-import {
+import streamDeck, {
   SingletonAction,
   type KeyDownEvent,
   type WillAppearEvent,
@@ -111,7 +111,10 @@ export class MetricAction extends SingletonAction<MetricSettings> {
     try {
       const metric = await fetchMetric(kind, config)
       await action.setTitle(`${metric.label}\n${metric.value}`)
-    } catch {
+    } catch (error) {
+      streamDeck.logger.error(
+        `metric ${kind} failed: ${error instanceof Error ? error.message : String(error)}`,
+      )
       await action.setTitle(`${labelFor(kind)}\n!`)
     }
   }

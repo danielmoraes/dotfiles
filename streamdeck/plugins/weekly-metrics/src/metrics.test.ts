@@ -1,3 +1,4 @@
+import { clearFeedCache } from "streamdeck-ical"
 import { expect, test } from "vite-plus/test"
 import {
   type FetchLike,
@@ -105,11 +106,11 @@ test("meetings counts events in the current week from the feed", async () => {
     "END:VEVENT",
     "END:VCALENDAR",
   ].join("\r\n")
-  const { impl } = fakeFetch(null, { text: ics })
+  clearFeedCache()
   expect(
     await meetings({
       icalUrl: "https://cal.test/feed.ics",
-      fetchImpl: impl,
+      fetchText: async () => ics,
       now: NOW,
     }),
   ).toBe(1)
