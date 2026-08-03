@@ -1,9 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", ":semanticCommits"],
+  "timezone": "America/Sao_Paulo",
+  "schedule": ["before 6am on monday"],
   "minimumReleaseAge": "1 day",
   "internalChecksFilter": "strict",
   "dependencyDashboard": true,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
   "github-actions": {
     "enabled": false
   },
@@ -18,6 +26,22 @@
         "oxfmt"
       ],
       "groupName": "toolchain"
+    },
+    {
+      "description": "Automerge patch + minor devDependency updates once CI passes.",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true
+    },
+    {
+      "description": "Automerge patch updates for runtime deps once CI passes.",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true
+    },
+    {
+      "description": "Never automerge major updates.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     }
   ]
 }
