@@ -119,17 +119,25 @@ test("the blank Default page exists but is not in the visible cycle", () => {
   expect(isRecord(blank)).toBe(true)
 })
 
-test("each page fills the deck's 8 keys and 4 dials", () => {
+test("every page fills all 8 keys; dials are the same subset everywhere", () => {
+  // Only 3 of 4 dials are filled today (Claude usage, cswap accounts, system
+  // volume) — D3 was tried (Launcher, then a media-transport dial) and pulled
+  // both times (see DIAL_STRIP's comment) rather than left holding a dead or
+  // broken control. Keys have no such out: all 8 are always bound.
   for (const page of PAGES) {
     const { keypad, encoder } = controllers(pageManifest(page))
     expect(Object.keys(keypad).length, `${page.title} keys`).toBe(
       COLUMNS * ROWS,
     )
-    expect(Object.keys(encoder).length, `${page.title} dials`).toBe(DIALS)
+    expect(Object.keys(encoder).sort(), `${page.title} dials`).toEqual([
+      "0,0",
+      "1,0",
+      "3,0",
+    ])
   }
 })
 
-test("key slots are addressed col,row within the hardware bounds", () => {
+test("key and dial slots are addressed col,row within the hardware bounds", () => {
   const { keypad, encoder } = controllers(pageManifest(PAGES[0]!))
   for (const slot of Object.keys(keypad)) {
     const [col, row] = slot.split(",").map(Number)
@@ -138,8 +146,13 @@ test("key slots are addressed col,row within the hardware bounds", () => {
     expect(row).toBeGreaterThanOrEqual(0)
     expect(row).toBeLessThan(ROWS)
   }
-  // Encoders are a single row.
-  expect(Object.keys(encoder).sort()).toEqual(["0,0", "1,0", "2,0", "3,0"])
+  // Encoders are a single row, addressed within the dial count.
+  for (const slot of Object.keys(encoder)) {
+    const [col, row] = slot.split(",").map(Number)
+    expect(col).toBeGreaterThanOrEqual(0)
+    expect(col).toBeLessThan(DIALS)
+    expect(row).toBe(0)
+  }
 })
 
 test("K8 on every page advances to the next page, so the cycle closes", () => {
@@ -160,6 +173,57 @@ test("dial entries carry an Encoder block and keys do not", () => {
   }
   for (const entry of Object.values(keypad)) {
     expect(isRecord(entry) && "Encoder" in entry).toBe(false)
+  }
+})
+
+test("multimedia dials are Elgato's built-in system action, unscoped to a plugin", () => {
+  // Like nextPage, this is a system action: no Plugin block, so the
+  // "prefixed by its plugin UUID" check below skips it rather than failing it.
+  const { encoder } = controllers(pageManifest(PAGES[0]!))
+  const d4 = encoder["3,0"]
+  if (!isRecord(d4) || !isRecord(d4.Settings)) {
+    throw new Error("expected a multimedia action at D4")
+  }
+  expect(d4.UUID).toBe("com.elgato.streamdeck.system.multimedia")
+  expect(d4.Plugin).toBeUndefined()
+  expect(d4.Settings.actionIdx).toBe(18)
+})
+
+test("D2 is the cswap accounts dial, not a second single-account gauge", () => {
+  // D1 (AgentDeck) already shows the signed-in account's quota. D2 previously
+  // showed the same thing via another plugin; it earns its slot by covering
+  // what D1 can't — every account at once, and switching between them.
+  const { encoder } = controllers(pageManifest(PAGES[0]!))
+  const d2 = encoder["1,0"]
+  if (!isRecord(d2) || !isRecord(d2.Plugin)) {
+    throw new Error("expected a plugin action at D2")
+  }
+  expect(d2.UUID).toBe("com.dmoraes.cswap.accounts")
+  expect(d2.Plugin.UUID).toBe("com.dmoraes.cswap")
+  expect(d2.Encoder).toBeDefined()
+})
+
+test("the dial strip is identical on every page", () => {
+  // Dials are steady-state controls reached for without looking, so unlike
+  // keys — which are meant to change per page — the same four should mean
+  // the same thing everywhere. ActionID is seeded per-page (see "every action
+  // id is unique across the whole profile" above), so it's excluded here —
+  // everything else about each slot should match exactly.
+  const withoutActionId = (entry: unknown) =>
+    isRecord(entry) ? { ...entry, ActionID: undefined } : entry
+  const strip = (encoder: Record<string, unknown>) =>
+    Object.fromEntries(
+      Object.entries(encoder).map(([slot, entry]) => [
+        slot,
+        withoutActionId(entry),
+      ]),
+    )
+
+  const [first, ...rest] = PAGES.map((page) =>
+    strip(controllers(pageManifest(page)).encoder),
+  )
+  for (const [index, encoder] of rest.entries()) {
+    expect(encoder, PAGES[index + 1]?.title).toEqual(first)
   }
 })
 

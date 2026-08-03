@@ -56,6 +56,11 @@ const SPOTIFY: PluginRef = {
   uuid: "com.ntanis.essentials-for-spotify",
   version: "1.2.0.0",
 }
+const CSWAP: PluginRef = {
+  name: "Claude Accounts",
+  uuid: "com.dmoraes.cswap",
+  version: "0.1.0.0",
+}
 
 /** A key or dial binding. */
 export type Binding =
@@ -65,6 +70,14 @@ export type Binding =
   | { kind: "website"; url: string; title: string }
   /** Advance to the next page of this profile. */
   | { kind: "nextPage"; title: string }
+  /**
+   * Elgato's built-in "Multimedia" system action — sends real hardware media
+   * key events, so it works with whatever app currently holds macOS's Now
+   * Playing focus, not one SDK-specific app. `actionIdx` selects its mode; the
+   * app ships no manifest listing them, so see `SYSTEM_VOLUME` / `MEDIA_PLAYER`
+   * below for how confident each value is.
+   */
+  | { kind: "multimedia"; actionIdx: number; title: string }
   /** An action provided by an installed plugin. */
   | {
       kind: "plugin"
@@ -113,6 +126,86 @@ const SESSION_SLOT: Binding = {
 }
 
 /**
+ * System output volume, via macOS media keys rather than AgentDeck's dial —
+ * `bound.serendipity.agentdeck.utility-dial` goes dead (rotate does nothing,
+ * press opens an app) whenever the AgentDeck daemon isn't running, which has
+ * nothing to do with the system volume it controls. `actionIdx: 18` is
+ * confirmed: it's exactly what Elgato's own shipped `StreamDeckPlus_macDefault`
+ * profile puts on a dial, labelled "System Volume".
+ */
+const SYSTEM_VOLUME: Binding = {
+  kind: "multimedia",
+  actionIdx: 18,
+  title: "System Volume",
+}
+
+/**
+ * The dial strip — identical on every page.
+ *
+ * Dials are steady-state controls reached for without looking, unlike keys —
+ * so unlike the keys, which are meant to change per page, the same four dials
+ * should mean the same thing everywhere. D3 is open, not filled for its own
+ * sake — two things were tried there and pulled:
+ *
+ * - AgentDeck's Codex gauge is gone: only Claude runs here, and the plugin
+ *   hardcodes each dial's role to its action UUID (`option-dial` = Claude,
+ *   `iterm-dial` = Codex), so it can't be repointed. The remaining Claude
+ *   gauge covers every window on its own — rotating cycles both → 5h → 7d →
+ *   session.
+ * - The Launcher dial went the way of the old launch keys: not reached for.
+ * - A generic media-transport dial (`actionIdx: 22` on the same built-in
+ *   `system.multimedia` action as `SYSTEM_VOLUME`) doesn't reach Focus@Will.
+ *   Confirmed two ways: sending `pause` via the `nowplaying-cli` CLI tool is a
+ *   no-op (elapsed time keeps climbing right through it), and clicking Pause
+ *   on Focus@Will's own card in macOS Control Center does nothing either. The
+ *   command genuinely doesn't work, on any sender — this isn't the
+ *   `actionIdx` guess landing on the wrong built-in mode. Root cause:
+ *   Focus@Will's Chromium layer registers itself as macOS's Now Playing app
+ *   (hence live title/artist/elapsed time), but never wires up a working
+ *   play/pause command handler, so every press — hardware key, Control
+ *   Center, or this dial — gets swallowed by that broken registration before
+ *   it can reach the app's own `globalShortcut.register("MediaPlayPause", …)`
+ *   listener, which is what would have actually worked. This is a Focus@Will
+ *   bug, not fixable from the Stream Deck side.
+ * - D2 held AI Usage Limits' quota gauge for a while, as a second readout that
+ *   didn't depend on the AgentDeck daemon. It was a duplicate in the end: both
+ *   it and D1 show the *signed-in* account's quota and nothing else, so the
+ *   two dials answered the same question twice. It's now the `cswap` dial,
+ *   which answers the question D1 can't — how much is left on *each* account,
+ *   which one is active, and switch between them — while still standing in as
+ *   the daemon-independent readout, since it shells out to a CLI rather than
+ *   talking to AgentDeck.
+ */
+const DIAL_STRIP: (Binding | null)[] = [
+  {
+    kind: "plugin",
+    plugin: AGENTDECK,
+    action: "bound.serendipity.agentdeck.option-dial",
+    name: "Claude Usage",
+  },
+  {
+    kind: "plugin",
+    plugin: CSWAP,
+    action: "com.dmoraes.cswap.accounts",
+    name: "Accounts",
+    settings: {
+      refreshSeconds: 60,
+      // The plugin would otherwise derive these from each email's domain —
+      // accurate, but not what either account is called in your head.
+      //
+      // Keyed by cswap slot number rather than by email, which the plugin also
+      // accepts: this repo is public, and renaming a bar shouldn't mean
+      // publishing an address. The trade is that reordering accounts in cswap
+      // would swap the labels. Anything unlisted still falls back to the
+      // derived name, so a third account reads sensibly with no edit here.
+      labels: { "1": "personal", "2": "work" },
+    },
+  },
+  null,
+  SYSTEM_VOLUME,
+]
+
+/**
  * Page 1 — Agents. Live Claude Code sessions, the way AgentDeck lays them out.
  *
  * AgentDeck's own recommended Stream Deck + profile is a wall of session slots
@@ -120,11 +213,7 @@ const SESSION_SLOT: Binding = {
  * keep the three-page cycle closed.
  *
  * Nothing here *starts* an agent — Claude Code gets launched from a terminal,
- * so the old summon keys were dead weight. Only Claude runs here, so the Codex
- * gauge is gone too: AgentDeck hardcodes each dial's role to its action UUID
- * (`option-dial` = Claude, `iterm-dial` = Codex), so it can't be repointed. The
- * remaining Claude gauge covers the windows on its own — rotating it cycles
- * both → 5h → 7d → session. That frees E4 for Spotify.
+ * so the old summon keys were dead weight.
  */
 const AGENTS: Page = {
   title: "Agents",
@@ -132,38 +221,14 @@ const AGENTS: Page = {
     ...Array.from({ length: 7 }, () => SESSION_SLOT),
     { kind: "nextPage", title: "Work ▶" },
   ],
-  dials: [
-    {
-      kind: "plugin",
-      plugin: AGENTDECK,
-      action: "bound.serendipity.agentdeck.option-dial",
-      name: "Claude Usage",
-    },
-    {
-      kind: "plugin",
-      plugin: AGENTDECK,
-      action: "bound.serendipity.agentdeck.utility-dial",
-      name: "Volume",
-    },
-    {
-      kind: "plugin",
-      plugin: AGENTDECK,
-      action: "bound.serendipity.agentdeck.launcher",
-      name: "Launcher",
-    },
-    {
-      kind: "plugin",
-      plugin: SPOTIFY,
-      action: "com.ntanis.essentials-for-spotify.playback-control-dial",
-      name: "Playback Control",
-    },
-  ],
+  dials: DIAL_STRIP,
 }
 
 /**
  * Page 2 — Work dashboard. Read-mostly status; pressing opens the relevant app.
  *
- * Dials are page 1's, so Claude quota stays glanceable from both working pages.
+ * Dials are the shared strip, so Claude quota and system volume stay
+ * glanceable and reachable from every page.
  */
 const WORK: Page = {
   title: "Work",
@@ -230,10 +295,15 @@ const WORK: Page = {
     },
     { kind: "nextPage", title: "Modes ▶" },
   ],
-  dials: AGENTS.dials,
+  dials: DIAL_STRIP,
 }
 
-/** Page 3 — Modes, media & metrics. Dials hand over to Spotify here. */
+/**
+ * Page 3 — Modes, media & metrics.
+ *
+ * K5/K6 are still Spotify-specific — they're unrelated to today's dial
+ * change, but worth a look if Spotify isn't the daily driver here either.
+ */
 const MODES: Page = {
   title: "Modes",
   keys: [
@@ -262,32 +332,7 @@ const MODES: Page = {
     run("sd-standup", "Standup"),
     { kind: "nextPage", title: "Agents ▶" },
   ],
-  dials: [
-    {
-      kind: "plugin",
-      plugin: SPOTIFY,
-      action: "com.ntanis.essentials-for-spotify.playback-control-dial",
-      name: "Playback Control",
-    },
-    {
-      kind: "plugin",
-      plugin: SPOTIFY,
-      action: "com.ntanis.essentials-for-spotify.volume-control-dial",
-      name: "Volume Control",
-    },
-    {
-      kind: "plugin",
-      plugin: SPOTIFY,
-      action: "com.ntanis.essentials-for-spotify.my-playlists-dial",
-      name: "My Playlists",
-    },
-    {
-      kind: "plugin",
-      plugin: AGENTDECK,
-      action: "bound.serendipity.agentdeck.utility-dial",
-      name: "Volume",
-    },
-  ],
+  dials: DIAL_STRIP,
 }
 
 /** The profile written to the deck. Page order is the K8 cycle order. */

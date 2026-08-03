@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Claude Accounts",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "UUID": "com.dmoraes.cswap",
+  "Description": "Usage limits for every managed Claude account, and one press to switch between them. Reads the cswap CLI.",
+  "Category": "Claude Accounts",
+  "CategoryIcon": "imgs/plugin/category",
+  "Icon": "imgs/plugin/icon",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": {
+    "MinimumVersion": "6.9"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "Accounts",
+      "UUID": "com.dmoraes.cswap.accounts",
+      "Icon": "imgs/actions/accounts/icon",
+      "Tooltip": "Usage limits for every Claude account. Rotate to change the window, press to switch account.",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "layouts/accounts.json",
+        "TriggerDescription": {
+          "Rotate": "Change window",
+          "Push": "Switch account"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/accounts/key",
+          "ShowTitle": false
+        }
+      ]
+    }
+  ]
+}

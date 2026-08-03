@@ -138,6 +138,14 @@ function action(
         States: [keyState(binding.title)],
         UUID: "com.elgato.streamdeck.page.next",
       }
+    case "multimedia":
+      return {
+        ...base,
+        Name: "Multimedia",
+        Settings: { actionIdx: binding.actionIdx },
+        States: [keyState(binding.title)],
+        UUID: "com.elgato.streamdeck.system.multimedia",
+      }
     case "plugin":
       return {
         ...base,

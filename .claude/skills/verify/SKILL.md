@@ -39,9 +39,11 @@ pnpm run build && ./streamdeck/install.sh
 env -i HOME="$HOME" PATH=/usr/bin:/bin:/usr/sbin:/sbin ~/.local/bin/sd-slack-status
 ```
 
-Safe to drive: `sd-slack-status`, `sd-switch-claude-account --current`,
-`sd-standup`. **Avoid** `sd-focus-mode` / `sd-meeting-mode` (they toggle macOS
-Focus, Slack status and music) and `sd-summon-*` (they open terminal windows).
+Safe to drive: `sd-slack-status`, `sd-standup`, `cswap --status --json` /
+`cswap --list --json` (read-only). **Avoid** `sd-focus-mode` / `sd-meeting-mode`
+(they toggle macOS Focus, Slack status and music), `sd-summon-*` (they open
+terminal windows), and `cswap --switch` / `--switch-to` (they really do change
+which Claude account is active).
 
 To prove `loadSecrets()` really read `~/.config/streamdeck/secrets.env`, put a
 value in the file that is _not_ in your shell env and watch the command take a

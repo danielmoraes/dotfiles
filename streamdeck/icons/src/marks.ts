@@ -4,6 +4,7 @@ import {
   type Sdf,
   circle,
   rgb,
+  ring,
   roundedRect,
   segment,
   union,
@@ -228,8 +229,27 @@ function jira(canvas: Canvas): void {
   )
 }
 
+/** cswap: two accounts' usage bars, the active one marked by a filled dot. */
+function cswap(canvas: Canvas): void {
+  plate(canvas, PURPLE)
+  const barH = w(0.09)
+  // Bars of different lengths carry the whole idea — two accounts, each some
+  // way through its quota — without needing a second colour on a white mark.
+  const bar = (cy: number, end: number): Sdf => {
+    const x0 = m(0.26)
+    const x1 = m(end)
+    return roundedRect((x0 + x1) / 2, m(cy), (x1 - x0) / 2, barH, barH)
+  }
+  canvas.fill(union(circle(m(0.06), m(0.24), w(0.11)), bar(0.24, 0.62)), WHITE)
+  canvas.fill(
+    union(ring(m(0.06), m(0.76), w(0.1), w(0.055)), bar(0.76, 1)),
+    WHITE,
+  )
+}
+
 export const MARKS: readonly Mark[] = [
   { plugin: "com.dmoraes.jira", draw: jira },
+  { plugin: "com.dmoraes.cswap", draw: cswap },
   { plugin: "com.dmoraes.commands", draw: commands },
   { plugin: "com.dmoraes.calendar", draw: calendar },
   { plugin: "com.dmoraes.github-stats", draw: githubStats },

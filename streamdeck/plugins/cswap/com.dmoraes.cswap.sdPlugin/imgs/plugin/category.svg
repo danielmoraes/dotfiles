@@ -1,0 +1,10 @@
+<!-- Category icon: 28x28, monochrome #FFFFFF on transparent (Elgato spec).
+     Mark: two accounts' usage bars, the active one dotted. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28">
+  <circle cx="3.6" cy="9" r="2.6" fill="#FFFFFF" />
+  <rect x="9" y="6.6" width="7" height="4.8" rx="2.4" fill="#FFFFFF" />
+  <rect x="9" y="6.6" width="16" height="4.8" rx="2.4" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+  <circle cx="3.6" cy="19.6" r="2.2" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+  <rect x="9" y="17.2" width="12" height="4.8" rx="2.4" fill="#FFFFFF" />
+  <rect x="9" y="17.2" width="16" height="4.8" rx="2.4" fill="none" stroke="#FFFFFF" stroke-width="1.5" />
+</svg>

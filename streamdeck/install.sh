@@ -85,7 +85,7 @@ for f in "$DIR"/scripts/bin/*.js; do
   # Skip tsdown shared chunks (hashed names like ctx-XXXX.js); install only the
   # command entrypoints. Node resolves the sibling chunks via the real path.
   case "$base" in
-    switch-claude-account|summon-agent|summon-claude|focus-mode|meeting-mode|quick-capture|standup|slack-status)
+    summon-agent|summon-claude|focus-mode|meeting-mode|quick-capture|standup|slack-status)
       target="$BIN_DIR/sd-${base}"
       # Must unlink first: a previous install left a symlink here, and `cat >`
       # would write straight through it into the built script.
