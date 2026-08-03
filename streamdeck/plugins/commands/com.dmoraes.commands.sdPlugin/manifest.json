@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Commands",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "UUID": "com.dmoraes.commands",
+  "Description": "Run this repo's sd-* commands from a key, without opening a terminal.",
+  "Category": "Commands",
+  "CategoryIcon": "imgs/plugin/category",
+  "Icon": "imgs/plugin/icon",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": { "MinimumVersion": "6.9" },
+  "OS": [{ "Platform": "mac", "MinimumVersion": "12" }],
+  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "Run Command",
+      "UUID": "com.dmoraes.commands.run",
+      "Icon": "imgs/actions/run/icon",
+      "Tooltip": "Run an sd-* command silently and show whether it worked.",
+      "Controllers": ["Keypad"],
+      "States": [
+        { "Image": "imgs/actions/run/key", "TitleAlignment": "middle" }
+      ]
+    }
+  ]
+}

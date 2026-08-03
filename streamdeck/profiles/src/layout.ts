@@ -1,6 +1,3 @@
-import { homedir } from "node:os"
-import { join } from "node:path"
-
 /**
  * The deck layout, as data.
  *
@@ -11,9 +8,6 @@ import { join } from "node:path"
  * Every action UUID here is one this repo installs (see `../plugins/README.md`)
  * or an Elgato built-in. Nothing references a plugin that isn't installed.
  */
-
-/** Where the `sd-*` commands land (see `../install.sh`). */
-const BIN = join(homedir(), ".local", "bin")
 
 export type PluginRef = {
   name: string
@@ -46,6 +40,12 @@ const AI_LIMITS: PluginRef = {
   uuid: "com.len.limits",
   version: "0.1.19.0",
 }
+/** Exported: `profile.ts` needs it to serialise the `run` bindings. */
+export const COMMANDS: PluginRef = {
+  name: "Commands",
+  uuid: "com.dmoraes.commands",
+  version: "0.1.0.0",
+}
 const CALENDAR: PluginRef = {
   name: "Calendar",
   uuid: "com.dmoraes.calendar",
@@ -64,7 +64,7 @@ const SPOTIFY: PluginRef = {
 
 /** A key or dial binding. */
 export type Binding =
-  /** Run one of the repo's `sd-*` commands via Elgato's "Open" action. */
+  /** Run one of the repo's `sd-*` commands via the `commands` plugin. */
   | { kind: "run"; command: string; args?: string[]; title: string }
   /** Open a URL in the browser. */
   | { kind: "website"; url: string; title: string }
@@ -90,9 +90,15 @@ export type Page = {
   dials: (Binding | null)[]
 }
 
-/** Helper: an `sd-*` command key. */
+/**
+ * Helper: an `sd-*` command key.
+ *
+ * The command name is passed bare — the plugin resolves it against
+ * `~/.local/bin` itself, because the Stream Deck app runs under launchd with a
+ * minimal `PATH`.
+ */
 function run(command: string, title: string, ...args: string[]): Binding {
-  return { kind: "run", command: join(BIN, command), args, title }
+  return { kind: "run", command, args, title }
 }
 
 /**

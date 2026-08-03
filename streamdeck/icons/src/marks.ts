@@ -21,6 +21,7 @@ const WHITE = rgb("#FFFFFF")
 const BLUE = rgb("#3B82F6")
 const GREEN = rgb("#22C55E")
 const RED = rgb("#EF4444")
+const PURPLE = rgb("#8B7BE8")
 
 /**
  * Marks are authored in a 0..1 "mark space" and inset into the plate, so the
@@ -188,7 +189,34 @@ function calendar(canvas: Canvas): void {
   )
 }
 
+/** commands: a shell prompt chevron. */
+function commands(canvas: Canvas): void {
+  plate(canvas, PURPLE)
+  const stroke = w(0.13)
+  canvas.fill(
+    union(
+      path(
+        [
+          [m(0.1), m(0.14)],
+          [m(0.52), m(0.45)],
+          [m(0.1), m(0.76)],
+        ],
+        stroke,
+      ),
+      path(
+        [
+          [m(0.6), m(0.78)],
+          [m(0.95), m(0.78)],
+        ],
+        stroke,
+      ),
+    ),
+    WHITE,
+  )
+}
+
 export const MARKS: readonly Mark[] = [
+  { plugin: "com.dmoraes.commands", draw: commands },
   { plugin: "com.dmoraes.calendar", draw: calendar },
   { plugin: "com.dmoraes.github-stats", draw: githubStats },
   { plugin: "com.dmoraes.slack-unread", draw: slackUnread },

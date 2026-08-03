@@ -1,0 +1,8 @@
+<!-- Category icon: 28x28, monochrome #FFFFFF on transparent (Elgato spec).
+     Mark: a shell prompt chevron. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28">
+  <g fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 8.5 12 14l-6 5.5" />
+    <path d="M14.5 20h8" />
+  </g>
+</svg>

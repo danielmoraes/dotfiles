@@ -1,0 +1,11 @@
+<!-- Key image: 72x72. The action writes its label (and a ✓/✗ after a press) as
+     the key title, so the backdrop stays quiet. Purple = the "agents /
+     commands" category (see ../../../../../icons/README.md). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <rect width="72" height="72" rx="10" fill="#16191F" />
+  <g fill="none" stroke="#8B93A5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M27 10.5 33 16l-6 5.5" />
+    <path d="M36 21.5h9" />
+  </g>
+  <rect x="12" y="60" width="48" height="4" rx="2" fill="#8B7BE8" />
+</svg>

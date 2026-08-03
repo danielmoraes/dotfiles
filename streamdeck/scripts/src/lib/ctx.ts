@@ -54,10 +54,43 @@ export type Ctx = {
   log(message: string): void
 }
 
+/**
+ * Directories added to `PATH` for anything these commands spawn.
+ *
+ * Keys invoke these through the Stream Deck app, which runs under launchd with
+ * `PATH=/usr/bin:/bin:/usr/sbin:/sbin`. Tools installed by Homebrew or into
+ * `~/.local/bin` — `gh` above all — simply aren't found there, and the failure
+ * surfaces as a bare `spawn gh ENOENT` long after the useful context is gone.
+ * Appending rather than replacing keeps a caller's own `PATH` authoritative.
+ */
+const EXTRA_PATH = [
+  "/opt/homebrew/bin",
+  "/usr/local/bin",
+  `${process.env.HOME ?? ""}/.local/bin`,
+]
+
+/** `PATH` with the dirs above appended, deduplicated, order preserved. */
+export function augmentedPath(current = process.env.PATH ?? ""): string {
+  const seen = new Set<string>()
+  return [...current.split(":"), ...EXTRA_PATH]
+    .filter(
+      (dir) => dir !== "" && !seen.has(dir) && seen.add(dir) !== undefined,
+    )
+    .join(":")
+}
+
+const spawnEnv = (): NodeJS.ProcessEnv => ({
+  ...process.env,
+  PATH: augmentedPath(),
+})
+
 const realShell: Shell = {
   run(cmd, args, opts) {
     return new Promise((resolve, reject) => {
-      const child = spawn(cmd, args, { stdio: ["pipe", "pipe", "pipe"] })
+      const child = spawn(cmd, args, {
+        stdio: ["pipe", "pipe", "pipe"],
+        env: spawnEnv(),
+      })
       let stdout = ""
       let stderr = ""
       child.stdout.on("data", (d) => (stdout += d.toString()))
@@ -72,7 +105,11 @@ const realShell: Shell = {
     })
   },
   spawnDetached(cmd, args) {
-    const child = spawn(cmd, args, { detached: true, stdio: "ignore" })
+    const child = spawn(cmd, args, {
+      detached: true,
+      stdio: "ignore",
+      env: spawnEnv(),
+    })
     child.unref()
   },
 }

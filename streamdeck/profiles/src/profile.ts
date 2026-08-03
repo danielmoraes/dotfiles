@@ -2,6 +2,7 @@ import {
   type Binding,
   type Page,
   COLUMNS,
+  COMMANDS,
   DIALS,
   PAGES,
   PROFILE_NAME,
@@ -85,17 +86,6 @@ function keyState(title?: string): Record<string, unknown> {
   }
 }
 
-/**
- * Quote a command line for Elgato's "Open" action, whose `path` setting is a
- * shell-parsed string — hence the embedded quotes around the executable.
- */
-export function openPath(
-  command: string,
-  args: readonly string[] = [],
-): string {
-  return [`"${command}"`, ...args].join(" ")
-}
-
 function action(
   binding: Binding,
   seed: string,
@@ -112,12 +102,25 @@ function action(
 
   switch (binding.kind) {
     case "run":
+      // Deliberately not Elgato's "Open" action: that runs `open <path>`, which
+      // hands an extension-less shell script to the user's terminal app instead
+      // of executing it — pressing the key spawned a terminal window and ran
+      // nothing. The `commands` plugin executes it directly.
       return {
         ...base,
-        Name: "Open",
-        Settings: { path: openPath(binding.command, binding.args) },
+        Name: "Run Command",
+        Plugin: {
+          Name: COMMANDS.name,
+          UUID: COMMANDS.uuid,
+          Version: COMMANDS.version,
+        },
+        Settings: {
+          command: binding.command,
+          args: binding.args ?? [],
+          title: binding.title,
+        },
         States: [keyState(binding.title)],
-        UUID: "com.elgato.streamdeck.system.open",
+        UUID: `${COMMANDS.uuid}.run`,
       }
     case "website":
       return {

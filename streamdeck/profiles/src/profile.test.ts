@@ -1,6 +1,6 @@
 import { expect, test } from "vite-plus/test"
 import { COLUMNS, DIALS, PAGES, ROWS } from "./layout.ts"
-import { buildProfile, openPath, pageManifest, stableUuid } from "./profile.ts"
+import { buildProfile, pageManifest, stableUuid } from "./profile.ts"
 import { findDevice, profilesNamed } from "./install.ts"
 
 const DEVICE = { Model: "20GBD9901", UUID: "@(1)[4057/132/TEST]" }
@@ -37,11 +37,31 @@ test("stableUuid is deterministic, well-formed and seed-sensitive", () => {
   )
 })
 
-test("openPath quotes the executable and appends args", () => {
-  expect(openPath("/bin/sd-x")).toBe('"/bin/sd-x"')
-  expect(openPath("/bin/sd-summon-agent", ["claude"])).toBe(
-    '"/bin/sd-summon-agent" claude',
-  )
+test("command keys use the commands plugin, never Elgato's Open action", () => {
+  // `Open` runs `open <path>`, which hands an extension-less shell script to
+  // the user's terminal app — the key spawned a window and ran nothing.
+  for (const page of PAGES) {
+    const { keypad } = controllers(pageManifest(page))
+    for (const entry of Object.values(keypad)) {
+      if (isRecord(entry)) {
+        expect(entry.UUID, `${page.title}`).not.toBe(
+          "com.elgato.streamdeck.system.open",
+        )
+      }
+    }
+  }
+})
+
+test("command keys carry the command name and its args", () => {
+  const { keypad } = controllers(pageManifest(PAGES[0]!))
+  // P1 K2 launches Claude via sd-summon-agent claude.
+  const k2 = keypad["1,0"]
+  if (!isRecord(k2) || !isRecord(k2.Settings)) {
+    throw new Error("expected a command action at K2")
+  }
+  expect(k2.UUID).toBe("com.dmoraes.commands.run")
+  expect(k2.Settings.command).toBe("sd-summon-agent")
+  expect(k2.Settings.args).toEqual(["claude"])
 })
 
 test("the profile manifest lists every page and points at the first", () => {
