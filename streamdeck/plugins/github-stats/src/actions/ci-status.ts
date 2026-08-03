@@ -24,6 +24,16 @@ const LABEL: Record<Conclusion, string> = {
 }
 
 /**
+ * Which conclusions turn the key red.
+ *
+ * Only an actual failure — a build still running, or one we couldn't read,
+ * isn't news. Crying wolf on `pending` would make the colour meaningless.
+ */
+export function ciState(conclusion: Conclusion): 0 | 1 {
+  return conclusion === "failure" ? 1 : 0
+}
+
+/**
  * Green/red CI state for a repo's branch on the key. `manifestId` must match
  * this action's UUID in manifest.json (see SearchCount for the rationale).
  */
@@ -57,8 +67,15 @@ export class CiStatus extends SingletonAction<CiStatusSettings> {
         token,
       })
       await action.setTitle(LABEL[c])
+      // setState only applies to keys; guard for dials/other controls.
+      if ("setState" in action) {
+        await action.setState(ciState(c))
+      }
     } catch {
       await action.setTitle("!")
+      if ("setState" in action) {
+        await action.setState(1)
+      }
     }
   }
 }

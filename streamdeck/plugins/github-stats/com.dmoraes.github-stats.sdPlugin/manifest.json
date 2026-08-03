@@ -53,9 +53,14 @@
       "Icon": "imgs/actions/ci-status/icon",
       "Tooltip": "Show the latest CI conclusion for a repo branch.",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/ci-status/key",
+          "TitleAlignment": "middle"
+        },
+        {
+          "Image": "imgs/actions/ci-status/key-alert",
           "TitleAlignment": "middle"
         }
       ]

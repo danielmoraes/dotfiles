@@ -1,0 +1,10 @@
+<!-- Key image: 72x72. Failure state: red rule, brighter glyph. The conclusion is the key title.
+     recolours nothing here, so keep the backdrop neutral. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <rect width="72" height="72" rx="10" fill="#1F1416" />
+  <g fill="none" stroke="#F3B3B3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="36" cy="17" r="7" />
+    <path d="m32.6 17.2 2.3 2.3 4.5-4.8" />
+  </g>
+  <rect x="12" y="60" width="48" height="4" rx="2" fill="#EF4444" />
+</svg>

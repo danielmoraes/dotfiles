@@ -5,6 +5,7 @@ import {
   latestRunConclusion,
   searchCount,
 } from "./github"
+import { ciState } from "./actions/ci-status"
 
 /** Build a fake fetch that returns `body` and records the URL it was called with. */
 function fakeFetch(
@@ -70,4 +71,13 @@ test("countState flips at the threshold", () => {
   expect(countState(1)).toBe(1)
   expect(countState(5, 3)).toBe(1)
   expect(countState(2, 3)).toBe(0)
+})
+
+test("ciState reddens a real failure but not a pending or unknown build", () => {
+  // A build still running isn't news; making the colour mean "not green" would
+  // have it red most mornings and stop carrying information.
+  expect(ciState("failure")).toBe(1)
+  expect(ciState("success")).toBe(0)
+  expect(ciState("pending")).toBe(0)
+  expect(ciState("unknown")).toBe(0)
 })
