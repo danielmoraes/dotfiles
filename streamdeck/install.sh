@@ -122,9 +122,8 @@ GITHUB_LOGIN=
 # local state file and needs no token.
 SLACK_TOKEN=
 WAKATIME_API_KEY=
-JIRA_BASE_URL=
-JIRA_EMAIL=
-JIRA_API_TOKEN=
+# Jira is NOT configured here — the streamdeck-jira plugin keeps its own
+# credentials in its Property Inspector on the key.
 # Optional: the calendar keys read the local macOS Calendar by default.
 # Set this only to use an .ics feed instead.
 ICAL_URL=

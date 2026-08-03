@@ -1,9 +1,8 @@
 import {
   type Runner,
+  calendarEvents,
   countMeetings as countLocal,
-  localEvents,
 } from "streamdeck-ical"
-import { countMeetings } from "./ics"
 
 /**
  * Pure "this week" metric fetchers. No Stream Deck dependencies so they can be
@@ -48,6 +47,8 @@ export type MetricConfig = {
   calendars?: readonly string[]
   /** Injected shell runner for the local calendar read (testing). */
   runner?: Runner
+  /** Injected feed fetcher (testing). */
+  fetchText?: (url: string) => Promise<string>
   /** Override API bases (testing). */
   wakatimeBase?: string
   githubBase?: string
@@ -206,29 +207,14 @@ export async function meetings(config: MetricConfig): Promise<number> {
   const to = new Date(from.getTime())
   to.setDate(to.getDate() + 7)
 
-  const url = config.icalUrl
-  if (!url) {
-    // `to` is exclusive for counting but inclusive in icalBuddy's range, so ask
-    // for one day less and let countLocal apply the real boundary.
-    const lastDay = new Date(to.getTime())
-    lastDay.setDate(lastDay.getDate() - 1)
-    const events = localEvents(from, lastDay, {
-      calendars: config.calendars,
-      runner: config.runner,
-    })
-    return countLocal(events, from, to, {
-      includeAllDay: config.includeAllDayMeetings,
-    })
-  }
-
-  const fetchImpl = config.fetchImpl ?? defaultFetch
-  const res = await fetchImpl(url, {
-    headers: { "User-Agent": "streamdeck-weekly-metrics" },
+  const events = await calendarEvents(from, to, {
+    icalUrl: config.icalUrl,
+    calendars: config.calendars,
+    runner: config.runner,
+    fetchText: config.fetchText,
+    now,
   })
-  if (!res.ok) {
-    throw new Error(`iCal fetch failed: HTTP ${res.status}`)
-  }
-  return countMeetings(await res.text(), from, to, {
+  return countLocal(events, from, to, {
     includeAllDay: config.includeAllDayMeetings,
   })
 }

@@ -108,13 +108,25 @@ test("localEvents falls through candidate paths until one works", () => {
   expect(tried).toEqual(["icalBuddy", "/opt/homebrew/bin/icalBuddy"])
 })
 
-test("localEvents throws a actionable error when nothing resolves", () => {
+test("localEvents says 'not installed' when no candidate exists", () => {
   const runner: Runner = () => {
-    throw new Error("ENOENT")
+    throw new Error("spawnSync icalBuddy ENOENT")
   }
   expect(() =>
     localEvents(new Date(2026, 7, 3), new Date(2026, 7, 10), { runner }),
-  ).toThrow(/icalBuddy not found/)
+  ).toThrow(/not installed/)
+})
+
+test("localEvents points at the privacy grant when the binary ran but failed", () => {
+  // Distinct from ENOENT: icalBuddy is installed, but EventKit refused it —
+  // which on macOS means the *host app* lacks a Calendar grant. Conflating the
+  // two sends you off to reinstall a tool that is already there.
+  const runner: Runner = () => {
+    throw new Error("Command failed: exit 1")
+  }
+  expect(() =>
+    localEvents(new Date(2026, 7, 3), new Date(2026, 7, 10), { runner }),
+  ).toThrow(/Calendar permission|Privacy & Security/)
 })
 
 test("isoDate formats in local time", () => {

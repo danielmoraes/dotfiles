@@ -104,13 +104,13 @@ GITHUB_TOKEN=          # optional — falls back to `gh auth token`
 GITHUB_LOGIN=          # only for weekly-metrics' `commits` metric
 SLACK_TOKEN=           # user token (xoxp-), for sd-slack-status / sd-focus-mode
 WAKATIME_API_KEY=      # wakatime.com/settings/api-key
-JIRA_BASE_URL=         # https://yourorg.atlassian.net
-JIRA_EMAIL=
-JIRA_API_TOKEN=
 ICAL_URL=              # private iCal feed
 ```
 
-Jira is configured in its own Property Inspector rather than from this file.
+Jira is **not** configured from this file — `streamdeck-jira` stores its domain,
+email, API token and JQL in its own Property Inspector, on the key itself. Get
+an API token from
+[id.atlassian.com/manage-profile/security/api-tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
 The calendar keys need no token at all — they read the local Calendar store,
 which needs `brew install ical-buddy` and a one-off macOS Calendar grant to the
 Stream Deck app.
