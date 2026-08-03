@@ -7,7 +7,7 @@ import streamDeck, {
   type WillAppearEvent,
   type WillDisappearEvent,
 } from "@elgato/streamdeck"
-import { currentProfile, statusLabel } from "../status"
+import { currentPresence, currentProfile, statusLabel } from "../status"
 
 export type SlackStatusSettings = {
   /** Seconds between reads of the live status. */
@@ -17,15 +17,6 @@ export type SlackStatusSettings = {
 
 const DEFAULT_REFRESH_SECONDS = 60
 const COMMAND = join(homedir(), ".local", "bin", "sd-slack-status")
-// Must match `scripts/src/lib/state.ts` — see there for why not $TMPDIR.
-const STATE_FILE = join(
-  homedir(),
-  ".local",
-  "state",
-  "streamdeck",
-  "slack-status",
-)
-
 /**
  * The modes the key cycles through, mirroring `scripts/src/lib/slack.ts`.
  *
@@ -116,26 +107,18 @@ export class SlackStatus extends SingletonAction<SlackStatusSettings> {
     this.timers.set(action.id, timer)
   }
 
-  private localMode(): string {
-    try {
-      return execFileSync("/bin/cat", [STATE_FILE], {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "ignore"],
-      }).trim()
-    } catch {
-      return ""
-    }
-  }
-
   private async render(
     action: WillAppearEvent<SlackStatusSettings>["action"],
     settings: SlackStatusSettings,
   ): Promise<void> {
     try {
-      const profile = await currentProfile({
-        token: settings.token || process.env.SLACK_TOKEN,
-      })
-      await action.setTitle(statusLabel(profile, MODES, this.localMode()))
+      const token = settings.token || process.env.SLACK_TOKEN
+      // Both halves come from Slack, so the key can't drift from it.
+      const [profile, presence] = await Promise.all([
+        currentProfile({ token }),
+        currentPresence({ token }),
+      ])
+      await action.setTitle(statusLabel(profile, presence, MODES))
     } catch (error) {
       streamDeck.logger.error(
         `slack status failed: ${error instanceof Error ? error.message : String(error)}`,

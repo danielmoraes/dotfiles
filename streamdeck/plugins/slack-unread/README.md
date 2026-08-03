@@ -73,9 +73,13 @@ pnpm -C streamdeck/plugins/slack-unread build       # -> .sdPlugin/bin/plugin.js
 
 ## The status key
 
-Shows what your status **actually is**, read from `users.profile.get` every 60s
-— so a status you set in the Slack client shows up here too, and the key can't
-drift from reality by claiming what it last set.
+Shows what your status **actually is** — status from `users.profile.get`,
+presence from `users.getPresence`, both every 60s. Slack is the only source of
+truth: a status or presence changed anywhere else shows up here too.
+
+Presence is checked first, because being away is the more consequential fact
+and the one a status string can't express — Slack shows you as away whatever
+your status says.
 
 Pressing it runs `sd-slack-status`, which walks a three-state cycle:
 
@@ -108,6 +112,10 @@ the command reports which part didn't take rather than silently half-working.
 That last row is the one worth dwelling on: a 🔕 status emoji **tells people**
 something and **mutes nothing**. Snoozing is `dnd.setSnooze`, a separate call.
 
-Reading presence back would additionally need `users:read`. Without it, an
-empty status can't be told apart from away by the API, so the key falls back to
-its own record of what it last set.
+| `users:read` | reading presence back | the key can't see Away
+
+**Why that last one matters.** Away carries no status text, so from the profile
+alone it is byte-identical to Online. An earlier version inferred it from a
+local record of the last press — which went stale the instant Slack flipped you
+back to active on any interaction, with nothing able to detect it. That record
+is gone; the key asks Slack.

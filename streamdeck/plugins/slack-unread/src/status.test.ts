@@ -1,5 +1,10 @@
 import { expect, test } from "vite-plus/test"
-import { type FetchLike, currentProfile, statusLabel } from "./status"
+import {
+  type FetchLike,
+  currentPresence,
+  currentProfile,
+  statusLabel,
+} from "./status"
 
 const MODES = [
   { name: "clear", emoji: "", text: "", keyLabel: "Online" },
@@ -44,29 +49,66 @@ test("currentProfile needs a token and surfaces Slack's own error", async () => 
   )
 })
 
-test("statusLabel names a mode it recognises", () => {
-  expect(
-    statusLabel({ emoji: ":no_bell:", text: "Focusing — back later" }, MODES),
-  ).toBe("Focus")
-  expect(statusLabel({ emoji: ":palm_tree:", text: "Away" }, MODES)).toBe(
-    "Away",
+test("currentPresence reads active or away", async () => {
+  const active = fakeFetch({ ok: true, presence: "active" })
+  expect(await currentPresence({ token: "t", fetchImpl: active.impl })).toBe(
+    "active",
+  )
+  expect(active.calls[0]).toBe("https://slack.com/api/users.getPresence")
+  const away = fakeFetch({ ok: true, presence: "away" })
+  expect(await currentPresence({ token: "t", fetchImpl: away.impl })).toBe(
+    "away",
   )
 })
 
-test("an empty status is Online, unless we know we set away", () => {
-  // Presence isn't readable without the users:read scope, so away with no
-  // status text can only come from our own record.
-  expect(statusLabel({ emoji: "", text: "" }, MODES)).toBe("Online")
-  expect(statusLabel({ emoji: "", text: "" }, MODES, "away")).toBe("Away")
-  expect(statusLabel({ emoji: "", text: "" }, MODES, "focus")).toBe("Online")
+test("currentPresence surfaces a missing scope rather than guessing", async () => {
+  const { impl } = fakeFetch({ ok: false, error: "missing_scope" })
+  await expect(
+    currentPresence({ token: "t", fetchImpl: impl }),
+  ).rejects.toThrow(/missing_scope/)
+})
+
+test("statusLabel names a mode it recognises", () => {
+  expect(
+    statusLabel(
+      { emoji: ":no_bell:", text: "Focusing — back later" },
+      "active",
+      MODES,
+    ),
+  ).toBe("Focus")
+})
+
+test("away wins over whatever the status says", () => {
+  // Slack shows you as away regardless of your status text, so the key must
+  // too — the away dot is the more consequential fact.
+  expect(statusLabel({ emoji: "", text: "" }, "away", MODES)).toBe("Away")
+  expect(
+    statusLabel(
+      { emoji: ":no_bell:", text: "Focusing — back later" },
+      "away",
+      MODES,
+    ),
+  ).toBe("Away")
+})
+
+test("an empty status while active is Online", () => {
+  expect(statusLabel({ emoji: "", text: "" }, "active", MODES)).toBe("Online")
 })
 
 test("a status set by hand in Slack is shown, not mislabelled", () => {
   // Better to show what Slack actually says than to claim it's one of ours.
-  expect(statusLabel({ emoji: ":coffee:", text: "brb" }, MODES)).toBe("brb")
-  expect(statusLabel({ emoji: ":coffee:", text: "" }, MODES)).toBe("set")
+  expect(statusLabel({ emoji: ":coffee:", text: "brb" }, "active", MODES)).toBe(
+    "brb",
+  )
+  expect(statusLabel({ emoji: ":coffee:", text: "" }, "active", MODES)).toBe(
+    "set",
+  )
   // And it's trimmed to fit the key.
   expect(
-    statusLabel({ emoji: ":x:", text: "a very long status indeed" }, MODES),
+    statusLabel(
+      { emoji: ":x:", text: "a very long status indeed" },
+      "active",
+      MODES,
+    ),
   ).toHaveLength(8)
 })
