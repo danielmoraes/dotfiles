@@ -10,12 +10,12 @@ Stream Deck app 6.9+).
 | --- | -------------------------- | --------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | ---------------------- |
 | 1   | **AgentDeck**              | `bound.serendipity.agentdeck`     | P1 K1 + dials    | [puritysb/AgentDeck](https://github.com/puritysb/AgentDeck)                               | ✅ v3                  |
 | 2   | **AI Usage Limits**        | `com.len.limits`                  | P1 K7            | [lenadweb/stream-deck-ai-limits](https://github.com/lenadweb/stream-deck-ai-limits)       | ✅ v3                  |
-| 3   | **iCal**                   | `com.pedrofuentes.ical`           | P2 K6            | [pedrofuentes/stream-deck-ical](https://github.com/pedrofuentes/stream-deck-ical)         | ✅ v3                  |
 | 4   | **Essentials for Spotify** | `com.ntanis-dev…`                 | P3 K5/K6 + dials | [ntanis-dev/essentials-for-spotify](https://github.com/ntanis-dev/essentials-for-spotify) | ✅ v3                  |
 | 5   | **Jira**                   | `com.mediabounds.streamdeck.jira` | P2 K4            | [mediabounds/streamdeck-jira](https://github.com/mediabounds/streamdeck-jira)             | ⚠️ 3rd-party framework |
 | 6   | **github-stats**           | `com.dmoraes.github-stats`        | P2 K1–K3         | [`github-stats/`](github-stats/) (this repo)                                              | ✅ v3                  |
 | 7   | **slack-unread**           | `com.dmoraes.slack-unread`        | P2 K5            | [`slack-unread/`](slack-unread/README.md) (this repo)                                     | ✅ v3                  |
 | 8   | **weekly-metrics**         | `com.dmoraes.weekly-metrics`      | P3 K4            | [`weekly-metrics/`](weekly-metrics/README.md) (this repo)                                 | ✅ v3                  |
+| 9   | **calendar**               | `com.dmoraes.calendar`            | P2 K6            | [`calendar/`](calendar/README.md) (this repo)                                             | ✅ v3                  |
 
 Action UUIDs for each are in
 [`../profiles/src/layout.ts`](../profiles/src/layout.ts) — that file is the only
@@ -27,8 +27,10 @@ place they're referenced.
   with AgentDeck; two use fragile custom integrations (app-shim / raw HID).
 - **ellreka/streamdeck-slack-status** — stale (2022), and only _sets_ status.
   We set status via `sd-slack-status` and count unread via `slack-unread`.
-- **tjluoma/icalbuddy-km** — 2020, macOS/Keyboard-Maestro only; `stream-deck-ical`
-  supersedes it.
+- **stream-deck-ical** — needs a private `.ics` feed URL. Google Workspace
+  disables the per-calendar secret address on managed domains, leaving only the
+  _public_ address, so there is nothing safe to point it at. Replaced by the
+  local-calendar `calendar` plugin above.
 
 ## Custom plugins (this repo)
 
@@ -105,5 +107,7 @@ JIRA_API_TOKEN=
 ICAL_URL=              # private iCal feed
 ```
 
-Jira and iCal are configured in their own Property Inspectors rather than from
-this file.
+Jira is configured in its own Property Inspector rather than from this file.
+The calendar keys need no token at all — they read the local Calendar store,
+which needs `brew install ical-buddy` and a one-off macOS Calendar grant to the
+Stream Deck app.

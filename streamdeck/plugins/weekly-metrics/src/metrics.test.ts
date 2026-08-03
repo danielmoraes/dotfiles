@@ -115,8 +115,44 @@ test("meetings counts events in the current week from the feed", async () => {
   ).toBe(1)
 })
 
-test("meetings requires a feed URL", async () => {
-  await expect(meetings({ now: NOW })).rejects.toThrow(/ICAL_URL/)
+test("meetings reads the local calendar when no feed URL is set", async () => {
+  // Injected runner: never touch the real Calendar store from a test — it's
+  // non-deterministic, and icalBuddy doesn't exist on the Linux CI runner.
+  const calls: string[][] = []
+  const runner = (cmd: string, args: string[]): string => {
+    calls.push([cmd, ...args])
+    return [
+      "2026-08-03 at 09:30\tStandup",
+      "2026-08-05 at 16:00\t1:1",
+      "2026-08-06\tOOO",
+      // Outside the week — must not be counted.
+      "2026-08-11 at 10:00\tNext week",
+    ].join("\n")
+  }
+  expect(await meetings({ now: NOW, runner })).toBe(2)
+  // Week runs Mon 03 .. Sun 09; icalBuddy's `to:` is inclusive of that day.
+  expect(calls[0]).toContain("eventsFrom:2026-08-03")
+  expect(calls[0]).toContain("to:2026-08-09")
+})
+
+test("meetings can include all-day entries from the local calendar", async () => {
+  const runner = (): string =>
+    ["2026-08-03 at 09:30\tStandup", "2026-08-06\tOOO"].join("\n")
+  expect(await meetings({ now: NOW, runner })).toBe(1)
+  expect(
+    await meetings({ now: NOW, runner, includeAllDayMeetings: true }),
+  ).toBe(2)
+})
+
+test("meetings restricts to the configured calendars", async () => {
+  const calls: string[][] = []
+  const runner = (cmd: string, args: string[]): string => {
+    calls.push([cmd, ...args])
+    return ""
+  }
+  await meetings({ now: NOW, runner, calendars: ["work@example.com"] })
+  expect(calls[0]).toContain("-ic")
+  expect(calls[0]).toContain("work@example.com")
 })
 
 test("fetchMetric formats each kind for the key", async () => {

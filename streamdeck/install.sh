@@ -37,6 +37,11 @@ if command -v pnpm >/dev/null 2>&1; then
 else
   warn "pnpm not found — install with: corepack enable && corepack prepare pnpm@10.15.0 --activate"
 fi
+if command -v icalBuddy >/dev/null 2>&1; then
+  ok "icalBuddy present (local calendar for the Next Meeting + MTGS keys)"
+else
+  warn "icalBuddy not found — the calendar keys need it: brew install ical-buddy"
+fi
 if command -v streamdeck >/dev/null 2>&1; then
   ok "@elgato/cli present ($(streamdeck --version 2>/dev/null || echo '?'))"
 else
@@ -118,6 +123,8 @@ WAKATIME_API_KEY=
 JIRA_BASE_URL=
 JIRA_EMAIL=
 JIRA_API_TOKEN=
+# Optional: the calendar keys read the local macOS Calendar by default.
+# Set this only to use an .ics feed instead.
 ICAL_URL=
 # Optional preferences
 STREAMDECK_TERMINAL=terminal        # terminal|iterm|wezterm|kitty

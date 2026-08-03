@@ -1,3 +1,8 @@
+import {
+  type Runner,
+  countMeetings as countLocal,
+  localEvents,
+} from "streamdeck-ical"
 import { countMeetings } from "./ics"
 
 /**
@@ -37,8 +42,12 @@ export type MetricConfig = {
   githubToken?: string
   /** GitHub login; required for the commits metric (commit search has no @me). */
   githubLogin?: string
-  /** Private iCal feed URL for the meetings metric. */
+  /** Optional `.ics` feed. Omit to read the local macOS Calendar store. */
   icalUrl?: string
+  /** Restrict the local calendar read to these calendar names. */
+  calendars?: readonly string[]
+  /** Injected shell runner for the local calendar read (testing). */
+  runner?: Runner
   /** Override API bases (testing). */
   wakatimeBase?: string
   githubBase?: string
@@ -183,12 +192,35 @@ export function commits(config: MetricConfig): Promise<number> {
   )
 }
 
-/** Meetings on your calendar since Monday. */
+/**
+ * Meetings on your calendar since Monday.
+ *
+ * Reads the local macOS Calendar store by default. An `.ics` feed is only used
+ * when `icalUrl` is set explicitly — Google Workspace domains often disable the
+ * per-calendar secret address, leaving no private feed to point at, while the
+ * same calendar is already synced into Calendar.app.
+ */
 export async function meetings(config: MetricConfig): Promise<number> {
+  const now = config.now ?? new Date()
+  const from = weekStart(now)
+  const to = new Date(from.getTime())
+  to.setDate(to.getDate() + 7)
+
   const url = config.icalUrl
   if (!url) {
-    throw new Error("ICAL_URL not set")
+    // `to` is exclusive for counting but inclusive in icalBuddy's range, so ask
+    // for one day less and let countLocal apply the real boundary.
+    const lastDay = new Date(to.getTime())
+    lastDay.setDate(lastDay.getDate() - 1)
+    const events = localEvents(from, lastDay, {
+      calendars: config.calendars,
+      runner: config.runner,
+    })
+    return countLocal(events, from, to, {
+      includeAllDay: config.includeAllDayMeetings,
+    })
   }
+
   const fetchImpl = config.fetchImpl ?? defaultFetch
   const res = await fetchImpl(url, {
     headers: { "User-Agent": "streamdeck-weekly-metrics" },
@@ -196,10 +228,6 @@ export async function meetings(config: MetricConfig): Promise<number> {
   if (!res.ok) {
     throw new Error(`iCal fetch failed: HTTP ${res.status}`)
   }
-  const now = config.now ?? new Date()
-  const from = weekStart(now)
-  const to = new Date(from.getTime())
-  to.setDate(to.getDate() + 7)
   return countMeetings(await res.text(), from, to, {
     includeAllDay: config.includeAllDayMeetings,
   })

@@ -1,7 +1,7 @@
 {
-  "name": "weekly-metrics",
+  "name": "calendar",
   "version": "0.1.0",
-  "description": "Stream Deck plugin: weekly coding hours, PRs merged, commits and meetings",
+  "description": "Stream Deck plugin: next meeting from the local macOS Calendar",
   "license": "MIT",
   "type": "module",
   "scripts": {
