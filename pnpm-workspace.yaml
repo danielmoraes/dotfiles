@@ -1,6 +1,9 @@
 packages:
   - "streamdeck/plugins/*"
   - "streamdeck/scripts"
+  - "streamdeck/icons"
+  - "streamdeck/profiles"
+  - "streamdeck/secrets"
 
 # Single source of truth for versions shared across workspace packages.
 # Reference from a package.json as `"<name>": "catalog:"`.
@@ -25,6 +28,12 @@ minimumReleaseAgeExclude:
   - "@elgato/*"
   - "@oxc-project/*"
   - "@voidzero-dev/*"
+  # tsdown -> rolldown-plugin-dts -> yuku-* ships per-platform native bindings
+  # that are republished on every release, so these scopes trip the 24h floor
+  # whenever tsdown resolves. Same trust boundary as the `tsdown` entry below.
+  - "@yuku-codegen/*"
+  - "@yuku-parser/*"
+  - "@yuku-toolchain/*"
   - oxfmt
   - oxlint
   - tsdown

@@ -48,16 +48,24 @@ async function setSlackStatus(
     return
   }
   const payload = JSON.stringify(slackStatusPayload(emoji, text))
-  await ctx.shell.run("curl", [
-    "-s",
-    "-X",
-    "POST",
-    "https://slack.com/api/users.profile.set",
-    "-H",
-    `Authorization: Bearer ${token}`,
-    "-H",
-    "Content-type: application/json; charset=utf-8",
-    "--data",
-    payload,
-  ])
+  // Token via a stdin config file, not argv — see the same call in
+  // commands/slack-status.ts.
+  await ctx.shell.run(
+    "curl",
+    [
+      "-s",
+      "--max-time",
+      "10",
+      "-X",
+      "POST",
+      "https://slack.com/api/users.profile.set",
+      "-H",
+      "Content-type: application/json; charset=utf-8",
+      "--data",
+      payload,
+      "--config",
+      "-",
+    ],
+    { input: `header = "Authorization: Bearer ${token}"\n` },
+  )
 }

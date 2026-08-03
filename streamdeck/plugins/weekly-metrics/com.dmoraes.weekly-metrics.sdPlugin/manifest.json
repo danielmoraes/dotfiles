@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Weekly Metrics",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "UUID": "com.dmoraes.weekly-metrics",
+  "Description": "Weekly coding hours, PRs merged, commits and meetings on one key.",
+  "Category": "Weekly Metrics",
+  "CategoryIcon": "imgs/plugin/category",
+  "Icon": "imgs/plugin/icon",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": { "MinimumVersion": "6.9" },
+  "OS": [
+    { "Platform": "mac", "MinimumVersion": "12" },
+    { "Platform": "windows", "MinimumVersion": "10" }
+  ],
+  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "Weekly Metric",
+      "UUID": "com.dmoraes.weekly-metrics.metric",
+      "Icon": "imgs/actions/metric/icon",
+      "Tooltip": "Show a weekly metric. Press to cycle to the next one.",
+      "Controllers": ["Keypad"],
+      "States": [
+        { "Image": "imgs/actions/metric/key", "TitleAlignment": "middle" }
+      ]
+    }
+  ]
+}

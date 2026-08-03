@@ -1,0 +1,12 @@
+<!-- Key image, "attention" state (count >= warnAt): same layout as key.svg with a
+     red rule and a brighter glyph so waiting messages read at a glance. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <rect width="72" height="72" rx="10" fill="#1F1416" />
+  <g fill="none" stroke="#F3B3B3" stroke-width="2.4" stroke-linecap="round">
+    <path d="M27 14h18" />
+    <path d="M26 21h18" />
+    <path d="M37 10.5l-3 14" />
+    <path d="M43 10.5l-3 14" />
+  </g>
+  <rect x="12" y="60" width="48" height="4" rx="2" fill="#EF4444" />
+</svg>

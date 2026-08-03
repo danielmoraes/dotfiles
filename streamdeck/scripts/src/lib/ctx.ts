@@ -9,6 +9,7 @@ import {
   unlink,
   writeFile,
 } from "node:fs/promises"
+import { loadSecrets } from "streamdeck-secrets"
 
 /** Result of running a subprocess to completion. */
 export type ExecResult = {
@@ -107,6 +108,10 @@ const realFs: FsOps = {
 
 /** Build the real, side-effecting context used by the bin entry points. */
 export function realCtx(): Ctx {
+  // Keys invoke these commands through the Stream Deck app, which passes the
+  // login environment rather than a shell's — so tokens have to be read off
+  // disk here or `ctx.env.SLACK_TOKEN` and friends are always empty.
+  loadSecrets()
   const home = process.env.HOME ?? ""
   return {
     shell: realShell,

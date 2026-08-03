@@ -1,0 +1,12 @@
+<!-- Key image: 72x72. The action writes "LABEL\nVALUE" as the key title, so the
+     backdrop carries only a small glyph and the category rule.
+     Green = the "modes / metrics" category (see ../../../../../icons/README.md). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <rect width="72" height="72" rx="10" fill="#16191F" />
+  <g fill="#8B93A5">
+    <rect x="26" y="14" width="5" height="8" rx="2.5" />
+    <rect x="33.5" y="9" width="5" height="13" rx="2.5" />
+    <rect x="41" y="4.5" width="5" height="17.5" rx="2.5" />
+  </g>
+  <rect x="12" y="60" width="48" height="4" rx="2" fill="#22C55E" />
+</svg>

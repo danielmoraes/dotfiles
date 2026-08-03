@@ -74,7 +74,7 @@ build` after cloning. Icons (`imgs/`) are not committed yet; the plugin runs
 
 ## Configuring keys (maps to `../../layout/streamdeck-plus-layout.md`)
 
-Set these in each key's Property Inspector (or via settings). A token with
+Set these per key in the generated profile (`profiles/src/layout.ts`). A token with
 `repo` + `read:org` scope is required for private data; store it once as a
 global setting or read `GITHUB_TOKEN` from the environment for local dev.
 

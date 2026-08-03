@@ -2,10 +2,6 @@
   "name": "dotfiles",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.34.5",
-  "engines": {
-    "node": ">=24"
-  },
   "scripts": {
     "check": "pnpm -r check",
     "build": "pnpm -r build",
@@ -15,5 +11,9 @@
   },
   "devDependencies": {
     "lefthook": "^1.13.6"
-  }
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@10.34.5"
 }

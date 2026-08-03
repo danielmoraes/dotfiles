@@ -1,0 +1,23 @@
+{
+  "name": "streamdeck-icons",
+  "version": "0.1.0",
+  "description": "Generates the PNG plugin icons required by the Stream Deck manifest",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node src/generate.ts",
+    "check": "vp check",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "typecheck": "tsc --noEmit",
+    "test": "vp test --run"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

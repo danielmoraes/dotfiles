@@ -2,12 +2,16 @@
 
 Hardware: **8 LCD keys** (2 rows × 4) + a **4-dial touch strip** at the bottom.
 
-The 8 keys are too few for everything at once, so the deck uses **profile pages**
-(a folder/next-page key flips between them). Dials are shared context where it
-makes sense but can be re-bound per page.
+This document is the _why_. The machine-readable twin — and what actually gets
+written to the deck — is [`../profiles/src/layout.ts`](../profiles/src/layout.ts).
+Change both together.
 
-Legend: `[K1]…[K8]` keys, `(D1)…(D4)` dials. `→` = press action, `⟳` = rotate,
-`◉` = touch/tap on LCD.
+The 8 keys are too few for everything at once, so the deck uses the app's
+**native pages**: one `Dotfiles` profile with 3 pages, and K8 on every page
+bound to _Next Page_ so the three cycle. Dials are shared where it makes sense
+and re-bound per page where it doesn't.
+
+Legend: `[K1]…[K8]` keys, `(D1)…(D4)` dials. `→` = press, `⟳` = rotate.
 
 ---
 
@@ -16,59 +20,53 @@ Legend: `[K1]…[K8]` keys, `(D1)…(D4)` dials. `→` = press action, `⟳` = r
 The default page. Driving Claude Code / Codex / pi and switching context.
 
 ```
-[K1] Agent status     [K2] Claude Code     [K3] Codex           [K4] pi
-     (AgentDeck)           launch/attach        launch/attach        launch/attach
+[K1] Agent status     [K2] Claude          [K3] Codex           [K4] pi
+     (AgentDeck)           summon-agent         summon-agent         summon-agent
 
-[K5] Switch account   [K6] Summon Claude   [K7] AI limits       [K8] ▶ Page 2
-     (script)             (script)             (ai-limits)          (next page)
+[K5] Account          [K6] Summon          [K7] Claude limits   [K8] Work ▶
+     (script)              (script)             (ai-limits)          (next page)
 ```
 
-- **K1 Agent status** — AgentDeck live session indicator (waiting/working/idle).
-  Press = interrupt / focus the active session.
-- **K2–K4** — launch or attach each agent CLI in a terminal. Uses
-  `scripts/summon-agent.sh <claude|codex|pi>`.
-- **K5 Switch account** — `scripts/switch-claude-account.sh` (cycles configured
-  accounts; the key title can show the active one via title-refresh).
-- **K6 Summon Claude** — opens a terminal in the current repo and starts Claude
-  Code with a prepped prompt (`scripts/summon-claude.sh`).
-- **K7 AI limits** — `stream-deck-ai-limits` plugin, Claude usage + reset.
+- **K1 Agent status** — AgentDeck _Session Slot_: which agent is running, in
+  which project, and whether it's working, waiting or idle. Press to jump in.
+- **K2–K4** — `sd-summon-agent <claude|codex|pi>`; launches the CLI in a terminal.
+- **K5 Account** — `sd-switch-claude-account`, cycles configured accounts.
+- **K6 Summon** — `sd-summon-claude`, opens a terminal in the current repo.
+- **K7 Claude limits** — `com.len.limits.progress`, usage + reset window.
 
-**Dials on Page 1:**
-- `(D1)` ⟳ Agent reasoning depth / model tier · → toggle Fast mode
-- `(D2)` ⟳ Scroll agent output / history · → submit
-- `(D3)` ⟳ Volume · → mute
-- `(D4)` ⟳ Pomodoro timer (⟳ set minutes) · → start/pause · LCD shows remaining
+**Dials (Pages 1 & 2 share these):**
+
+- `(D1)` AgentDeck **Claude usage** — quota on the LCD strip
+- `(D2)` AgentDeck **Codex usage**
+- `(D3)` AgentDeck **Volume** · → mute
+- `(D4)` AgentDeck **Launcher** — ⟳ pick an agent/project, → start a session
 
 ---
 
-## Page 2 — Work dashboard (read-only status)
+## Page 2 — Work dashboard (read-mostly status)
 
-Glanceable state. These keys mostly *display*; pressing opens the relevant app.
+Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 
 ```
-[K1] PRs to review    [K2] My open PRs     [K3] CI status       [K4] Tasks assigned
-     (github-stats)       (github-stats)       (github-stats)       (jira / github)
+[K1] PRs to review    [K2] My open PRs     [K3] CI status       [K4] Jira
+     (github-stats)       (github-stats)       (github-stats)       (JQL result)
 
-[K5] Slack unread     [K6] Next meeting    [K7] Slack status    [K8] ▶ Page 3
-     (custom)             (stream-deck-ical)   (set: script)        (next page)
+[K5] Slack unread     [K6] Next meeting    [K7] Slack status    [K8] Modes ▶
+     (slack-unread)       (ical)               (script)             (next page)
 ```
 
-- **K1 PRs to review** — count of PRs requesting your review; red if > 0. Press
-  opens the GitHub review queue.
-- **K2 My open PRs** — count of your open PRs; amber if any have failing checks.
-- **K3 CI status** — green/red for your watched repos' default branch.
-- **K4 Tasks assigned** — Jira issues assigned to you (count) via
-  `streamdeck-jira`, or GitHub issues via `github-stats`.
-- **K5 Slack unread** — count of unread mentions/DMs (custom plugin).
-- **K6 Next meeting** — `stream-deck-ical`; title + countdown, color escalates as
-  it approaches. Press launches the calendar/meeting link.
-- **K7 Slack status** — set/clear status (🟢 available / 🔴 focus / 🍽 lunch).
+- **K1 PRs to review** — `is:open is:pr review-requested:@me`; red at ≥ 1.
+  Press opens the GitHub review queue.
+- **K2 My open PRs** — `is:open is:pr author:@me`.
+- **K3 CI status** — latest Actions conclusion for `danielmoraes/dotfiles@main`.
+- **K4 Jira** — `streamdeck-jira` JQL result count. Set the JQL in its
+  Property Inspector.
+- **K5 Slack unread** — unread mentions + DMs; red at ≥ 1. Press opens Slack.
+- **K6 Next meeting** — `stream-deck-ical`; title + countdown, colour escalates.
+- **K7 Slack status** — `sd-slack-status` cycles 🟢 available → 🔴 focus →
+  🍽 lunch → clear. Pass a preset name to jump straight to one.
 
-**Dials on Page 2:**
-- `(D1)` ⟳ cycle watched repos (K1–K3 refocus on the selected repo)
-- `(D2)` ⟳ scroll the meeting list on the LCD
-- `(D3)` ⟳ Volume · → mute
-- `(D4)` ⟳ Pomodoro (shared with Page 1)
+**Dials:** same as Page 1, so agent quota stays visible from both working pages.
 
 ---
 
@@ -76,45 +74,39 @@ Glanceable state. These keys mostly *display*; pressing opens the relevant app.
 
 ```
 [K1] Focus mode       [K2] Meeting mode    [K3] Quick capture   [K4] Weekly metrics
-     (script)             (script)             (script)             (custom, cycles)
+     (script)             (script)             (script)             (weekly-metrics)
 
-[K5] Spotify play     [K6] Spotify next    [K7] Standup helper  [K8] ▶ Page 1
+[K5] Play / Pause     [K6] Next song       [K7] Standup         [K8] Agents ▶
      (spotify)            (spotify)            (script)             (home)
 ```
 
-- **K1 Focus mode** — `scripts/focus-mode-toggle.sh`: macOS Focus on, quit/hush
-  Slack, start focus playlist, set Slack status to 🔴.
-- **K2 Meeting mode** — `scripts/meeting-mode.sh`: mute mic, DND, pause music.
-- **K3 Quick capture** — `scripts/quick-capture.sh`: append a line to your inbox
-  / create a GitHub issue.
-- **K4 Weekly metrics** — custom plugin; press cycles WakaTime hours → PRs merged
-  → meetings attended this week.
-- **K5/K6 Spotify** — `essentials-for-spotify` plugin.
-- **K7 Standup helper** — `scripts/standup.sh`: summarize yesterday's merged PRs
-  and commits to the clipboard.
+- **K1 Focus mode** — `sd-focus-mode`: macOS Focus, Slack status, focus playlist.
+- **K2 Meeting mode** — `sd-meeting-mode`: mute mic, DND, pause music.
+- **K3 Quick capture** — `sd-quick-capture`: append to your inbox / open an issue.
+- **K4 Weekly metrics** — press cycles coding hours → PRs merged → meetings.
+- **K5/K6 Spotify** — `essentials-for-spotify`.
+- **K7 Standup** — `sd-standup`: yesterday's merged PRs and commits to the clipboard.
 
-**Dials on Page 3:**
-- `(D1)` ⟳ Spotify volume · → play/pause
-- `(D2)` ⟳ Spotify seek/next · → like
-- `(D3)` ⟳ Screen/Key Light brightness (if Elgato lights present)
-- `(D4)` ⟳ Pomodoro (shared)
+**Dials on Page 3** hand over to media:
+
+- `(D1)` Spotify **Playback control** — ⟳ seek · → play/pause
+- `(D2)` Spotify **Volume**
+- `(D3)` Spotify **My playlists** — ⟳ browse · → play
+- `(D4)` AgentDeck **Volume** (system volume, shared with pages 1–2)
 
 ---
 
-## Notes on realizing this in the Elgato app
+## Notes
 
-- Pages are implemented either as **separate profiles** with a "Switch Profile"
-  key, or as **folders** (Create Folder action) within one profile. Folders are
-  simpler for a linear K8 "next page" flow; profiles are better if you want an
-  app-specific profile to auto-activate (e.g. a "Meeting" profile when Zoom is
-  frontmost).
-- Any key labeled *(script)* uses **System → Open** pointed at the matching file
-  in `scripts/` (after `install.sh` links them into `~/.local/bin`), or the
-  **BetterTouchTool / "Open"** action. Keep the profile thin — logic lives in the
-  scripts.
-- Keys labeled *(plugin name)* come from the installed plugins in
-  `plugins/README.md`.
-- **Title refresh:** for keys that should show live values but aren't a full
-  plugin (active Claude account, Pomodoro remaining), a small
-  `launchd`/cron job can rewrite the key title via the plugin's settings — noted
-  per-script where relevant.
+- **Pages, not folders or separate profiles.** Stream Deck 7.x has real pages,
+  so one profile holds all three and K8 (_Next Page_) cycles them. A
+  profile-per-page would only be worth it to auto-activate one per app.
+- Keys labelled _(script)_ use Elgato's **Open** action pointed at the built
+  `sd-*` command in `~/.local/bin` (see [`../scripts/`](../scripts/README.md)).
+  Logic lives in the scripts, so the profile stays thin and testable.
+- Keys labelled _(plugin)_ come from [`../plugins/README.md`](../plugins/README.md).
+- **Secrets.** The app launches plugins and scripts with the _login_
+  environment, not your shell's — so both load
+  `~/.config/streamdeck/secrets.env` themselves via
+  [`../secrets/`](../secrets/src/index.ts). GitHub falls back to `gh auth token`
+  when `GITHUB_TOKEN` is blank.

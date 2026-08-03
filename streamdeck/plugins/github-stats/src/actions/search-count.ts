@@ -3,6 +3,7 @@ import streamDeck, {
   type KeyDownEvent,
   type WillAppearEvent,
 } from "@elgato/streamdeck"
+import { githubToken } from "streamdeck-secrets"
 import { countState, searchCount } from "../github"
 
 export type SearchCountSettings = {
@@ -30,7 +31,7 @@ const DEFAULT_QUERY = "is:open is:pr review-requested:@me"
  * across compilers that don't lower TC39 decorators.)
  */
 export class SearchCount extends SingletonAction<SearchCountSettings> {
-  override manifestId = "org.dmoraes.github-stats.search-count"
+  override manifestId = "com.dmoraes.github-stats.search-count"
 
   override onWillAppear(
     ev: WillAppearEvent<SearchCountSettings>,
@@ -52,7 +53,7 @@ export class SearchCount extends SingletonAction<SearchCountSettings> {
     settings: SearchCountSettings,
   ): Promise<void> {
     const query = settings.query ?? DEFAULT_QUERY
-    const token = settings.token ?? process.env.GITHUB_TOKEN
+    const token = settings.token || githubToken()
     try {
       const n = await searchCount(query, { apiBase: settings.apiBase, token })
       await action.setTitle(String(n))
