@@ -48,8 +48,6 @@ const PANEL_FILL = "#1F242C"
 const WHITE = "#FFFFFF"
 const DIM = "#6B7280"
 const TRACK = "#2A2F3A"
-/** A name you chose is brighter than a slug you didn't. */
-const NAMED = "#A5B4C4"
 
 /** Bar colours, the same ladder the cswap dial uses: blue quiet, red loud. */
 const QUIET = "#3B82F6"
@@ -206,8 +204,7 @@ export function renderSlot(slot: Slot, frame = 0): string {
   return svg(
     [
       border(slot, frame),
-      text(LEFT, 42, truncate(slot.repo, 11), { size: 17, weight: "700" }),
-      subtitle(slot),
+      identity(slot),
       slot.contextPercent === undefined ? "" : contextRow(slot.contextPercent),
       bottom === "" ? "" : text(LEFT, 122, bottom, { size: 11, fill: DIM }),
       // The terminal, far right of the bottom line: the one identifier that
@@ -224,26 +221,34 @@ export function renderSlot(slot: Slot, frame = 0): string {
 }
 
 /**
- * The second line: what tells two sessions in the same repo apart.
+ * The two identity lines: what this session is, then what it sits inside.
  *
- * A name you set with `/rename` wins — it's chosen, so it says more than a
- * generated slug — and it drops the branch glyph, because it isn't a branch.
- * Otherwise the worktree, which is the next best thing.
+ * The big line is always the best name available. A name you set with
+ * `/rename` is the best there is — it's chosen, so it beats anything derived —
+ * and the repo goes quietly underneath as context. Failing that the repo takes
+ * the big line and the worktree slug goes below it, marked with a branch glyph
+ * because that's what it is.
+ *
+ * Either way the top line answers "which session" and the bottom one answers
+ * "where", which is the order you read them in.
  */
-function subtitle(slot: Slot): string {
-  if (slot.name !== undefined) {
-    return text(LEFT, 62, truncate(slot.name, 18), {
-      size: 12,
-      fill: NAMED,
-      weight: "600",
+function identity(slot: Slot): string {
+  const heading = (value: string): string =>
+    text(LEFT, 42, truncate(value, 11), { size: 17, weight: "700" })
+  const sub = (value: string, indent = 0): string =>
+    text(LEFT + indent, 62, truncate(value, indent === 0 ? 18 : 16), {
+      size: 11,
+      fill: DIM,
     })
-  }
-  if (slot.worktree === undefined) {
-    return ""
+
+  if (slot.name !== undefined) {
+    return heading(slot.name) + sub(slot.repo)
   }
   return (
-    branchGlyph(LEFT + 3, 58) +
-    text(LEFT + 13, 62, truncate(slot.worktree, 16), { size: 11, fill: DIM })
+    heading(slot.repo) +
+    (slot.worktree === undefined
+      ? ""
+      : branchGlyph(LEFT + 3, 58) + sub(slot.worktree, 13))
   )
 }
 

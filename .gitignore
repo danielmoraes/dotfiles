@@ -26,3 +26,6 @@ streamdeck/scripts/bin/
 **/.turbo/
 **/coverage/
 *.tsbuildinfo
+
+# Claude Code worktrees live inside the repo; they are checkouts, not content.
+.claude/worktrees/

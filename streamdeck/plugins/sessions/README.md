@@ -5,12 +5,20 @@ One key per live Claude Code session, on page 1 of the deck.
 ```
 ┌────────────────┐  ← teal dash orbiting  = running
 │                │    amber ring breathing = wants you
-│  steward       │    hairline             = idle
-│  ⑂ calm-mappi… │  the session's name, or its worktree
+│  stream deck   │    hairline             = idle
+│  steward       │  the name you gave it, over the repo
 │                │
 │  ▓▓▓▓▓▓▓▓░ 87% │  context window
 │  21m · 16:06   │  running for · started at      s002 ← terminal
 └────────────────┘
+```
+
+Unnamed, it's the repo on top and the worktree below:
+
+```
+┌────────────────┐
+│  steward       │
+│  ⑂ calm-mappi… │
 ```
 
 Read-only, and daemon-free: everything comes from files Claude Code already
@@ -21,15 +29,16 @@ writes.
 Three things on the key are there to answer "which one is this", in order of
 how much they're worth:
 
-1. **The name you gave it.** `/rename` in the session, and the second line
-   becomes that name.
-2. **The worktree**, when there's no name — `.claude/worktrees/<slug>`, under
-   the repo it belongs to.
+1. **The name you gave it.** `/rename` in the session and it takes the top
+   line, with the repo demoted to the smaller line beneath as context.
+2. **The worktree**, when there's no name. Then the repo leads and the slug
+   sits under it, marked with a branch glyph.
 3. **The terminal** (`s002`), bottom right. The only identifier that leads back
    to a window: run `tty` in any terminal and it prints the same thing.
 
-The repo is always the first line, because it's what the other two are _within_
-— and it's the field AgentDeck's slot could never show.
+Either way the top line answers "which session" and the second answers "where",
+which is the order you read them in. The repo is on the key at all times —
+which is the one thing AgentDeck's slot could never show.
 
 ## Why not AgentDeck's own session slot
 

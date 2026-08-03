@@ -18,21 +18,33 @@ const RUNNING: Slot = {
   startedAt: "16:06",
 }
 
-test("the key names the repo and the worktree", () => {
+test("unnamed: the repo leads and the worktree sits under it", () => {
   const svg = renderSlot(RUNNING)
   expect(svg).toContain(">steward<")
-  // 16 characters plus an ellipsis, not the daemon's 13-character clip.
+  // 16 characters plus an ellipsis, not AgentDeck's 13-character clip.
   expect(svg).toContain(">calm-mapping-tw…<")
+  // The repo gets the big line.
+  expect(svg).toMatch(/font-size="17"[^>]*>steward</)
 })
 
-test("a /rename'd session shows its name instead of the slug", () => {
+test("named: the name leads and the repo sits under it", () => {
   const svg = renderSlot({ ...RUNNING, name: "stream deck" })
-  expect(svg).toContain(">stream deck<")
-  expect(svg, "the slug is still competing for the line").not.toContain(
-    ">calm-mapping-tw…<",
-  )
-  // The repo is what the name is *within*, so it stays.
-  expect(svg).toContain(">steward<")
+  // The name you chose is the identity, so it takes the heading...
+  expect(svg).toMatch(/font-size="17"[^>]*>stream deck</)
+  // ...and the repo becomes the context line beneath it.
+  expect(svg).toMatch(/font-size="11"[^>]*>steward</)
+  // The slug is not worth a line once there's a name.
+  expect(svg).not.toContain(">calm-mapping-tw…<")
+})
+
+test("a named session in a plain checkout still shows its repo", () => {
+  const svg = renderSlot({
+    ...RUNNING,
+    name: "stream deck",
+    worktree: undefined,
+  })
+  expect(svg).toMatch(/font-size="17"[^>]*>stream deck</)
+  expect(svg).toMatch(/font-size="11"[^>]*>steward</)
 })
 
 test("the terminal rides along, so a key leads back to a window", () => {
