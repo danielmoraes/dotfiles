@@ -1,0 +1,15 @@
+{
+  "includeCoAuthoredBy": false,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm install --frozen-lockfile >/dev/null 2>&1 && pnpm exec lefthook install >/dev/null 2>&1 || true"
+          }
+        ]
+      }
+    ]
+  }
+}

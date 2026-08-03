@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "GitHub Stats",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "Description": "Show GitHub PR/CI/task counts on Stream Deck keys.",
+  "Category": "GitHub Stats",
+  "Icon": "imgs/plugin/category",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": { "MinimumVersion": "6.9" },
+  "OS": [
+    { "Platform": "mac", "MinimumVersion": "12" },
+    { "Platform": "windows", "MinimumVersion": "10" }
+  ],
+  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "Search Count",
+      "UUID": "org.dmoraes.github-stats.search-count",
+      "Icon": "imgs/actions/search-count/icon",
+      "Tooltip": "Show the number of results for a GitHub search (e.g. PRs to review).",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/search-count/key",
+          "TitleAlignment": "middle"
+        },
+        {
+          "Image": "imgs/actions/search-count/key-alert",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "CI Status",
+      "UUID": "org.dmoraes.github-stats.ci-status",
+      "Icon": "imgs/actions/ci-status/icon",
+      "Tooltip": "Show the latest CI conclusion for a repo branch.",
+      "Controllers": ["Keypad"],
+      "States": [
+        { "Image": "imgs/actions/ci-status/key", "TitleAlignment": "middle" }
+      ]
+    }
+  ]
+}

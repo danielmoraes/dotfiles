@@ -1,0 +1,11 @@
+version: 2
+updates:
+  # Keep GitHub Actions pinned versions fresh (native, zero extra setup).
+  # npm/pnpm dependency updates are handled by Renovate (see renovate.json),
+  # which understands the pnpm catalog and respects minimumReleaseAge.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci

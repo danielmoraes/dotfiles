@@ -1,0 +1,24 @@
+# Secrets — never commit tokens
+secrets.env
+*.secret
+.env
+.env.*
+
+# OS / editor cruft
+.DS_Store
+*.swp
+Thumbs.db
+
+# Node deps + build output for custom plugins (pnpm-lock.yaml IS tracked)
+node_modules/
+streamdeck/plugins/*/*.streamDeckPlugin
+streamdeck/plugins/*/dist/
+# Compiled plugin code + SDK runtime logs (build artifacts)
+streamdeck/plugins/*/*.sdPlugin/bin/
+streamdeck/plugins/*/*.sdPlugin/logs/
+# Compiled glue commands (build artifact; install.sh rebuilds them)
+streamdeck/scripts/bin/
+# Toolchain caches (vite-plus / turbo / tsdown / vitest)
+**/.turbo/
+**/coverage/
+*.tsbuildinfo

@@ -1,0 +1,32 @@
+packages:
+  - "streamdeck/plugins/*"
+  - "streamdeck/scripts"
+
+# Single source of truth for versions shared across workspace packages.
+# Reference from a package.json as `"<name>": "catalog:"`.
+catalog:
+  "@elgato/streamdeck": ^2.0.0
+  "@types/node": ^24.3.1
+  "@types/ws": ^8.5.12
+  tsdown: ^0.22.14
+  typescript: ^7.0.0
+  vite-plus: ^0.2.7
+  ws: ^8.18.0
+
+# Supply-chain hardening (mirrors Form Factory devtools):
+# - `ignoreScripts: true` blocks lifecycle scripts from transitive deps on
+#   install. Local workspace packages still run their own hooks via `pnpm run`.
+# - `minimumReleaseAge: 1440` refuses packages published in the last 24h
+#   (mitigates compromise-then-publish attacks). Trusted toolchain scopes are
+#   exempt.
+ignoreScripts: true
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - "@elgato/*"
+  - "@oxc-project/*"
+  - "@voidzero-dev/*"
+  - oxfmt
+  - oxlint
+  - tsdown
+  - vite-plus
+  - vitest

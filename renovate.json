@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "minimumReleaseAge": "1 day",
+  "internalChecksFilter": "strict",
+  "dependencyDashboard": true,
+  "github-actions": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "description": "Group the shared toolchain (catalog) into one PR.",
+      "matchPackageNames": [
+        "vite-plus",
+        "tsdown",
+        "typescript",
+        "oxlint",
+        "oxfmt"
+      ],
+      "groupName": "toolchain"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+# Git hooks. The repo root is the pnpm workspace root, so `lefthook install`
+# (run by install.sh, or `pnpm exec lefthook install`) works normally.
+#
+# The glob gates the command so commits that don't touch streamdeck/ skip it.
+
+# Strip AI co-author/session trailers from every commit message, so the repo
+# stays single-author regardless of what tool (incl. Claude Code web) wrote it.
+# {1} is the path to the commit message file. `sed -i.bak` works on BSD (macOS)
+# and GNU sed alike.
+commit-msg:
+  commands:
+    strip-ai-trailers:
+      run: |
+        sed -i.bak -e '/^Co-[Aa]uthored-[Bb]y: Claude/d' -e '/^Claude-Session:/d' -e '/Generated with \[Claude Code\]/d' "{1}" && rm -f "{1}.bak"
+
+pre-commit:
+  parallel: false
+  commands:
+    check:
+      glob: "streamdeck/*.{ts,js,json,md,yaml,yml}"
+      run: pnpm run check
+
+pre-push:
+  parallel: false
+  commands:
+    test:
+      run: pnpm run test
