@@ -92,13 +92,21 @@ meaning the same thing.
 A status set by hand in Slack that isn't one of these is shown as its own text
 rather than mislabelled as one of ours.
 
-### Presence needs an extra scope
+### Scopes
 
-`away` is a real presence change (`users.setPresence`), not just a status
-string — showing online with an "Away" message is visible but still gettable.
-That call needs the **`users:write`** scope. Without it the status still
-applies and the command reports `presence: add the users:write scope` rather
-than silently half-working.
+Setting a status is one API call; presence and notifications are two more,
+each behind its own scope. A token without them still applies the status, and
+the command reports which part didn't take rather than silently half-working.
+
+| Scope                 | Needed for                            | Without it            |
+| --------------------- | ------------------------------------- | --------------------- |
+| `users.profile:write` | the status itself                     | nothing works         |
+| `users.profile:read`  | showing the current status on the key | key shows `!`         |
+| **`users:write`**     | `away` being a real presence change   | you stay "online"     |
+| **`dnd:write`**       | `focus` actually silencing Slack      | 🔕 is decoration only |
+
+That last row is the one worth dwelling on: a 🔕 status emoji **tells people**
+something and **mutes nothing**. Snoozing is `dnd.setSnooze`, a separate call.
 
 Reading presence back would additionally need `users:read`. Without it, an
 empty status can't be told apart from away by the API, so the key falls back to

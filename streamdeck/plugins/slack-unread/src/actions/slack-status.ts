@@ -17,7 +17,14 @@ export type SlackStatusSettings = {
 
 const DEFAULT_REFRESH_SECONDS = 60
 const COMMAND = join(homedir(), ".local", "bin", "sd-slack-status")
-const STATE_FILE = join(process.env.TMPDIR ?? "/tmp", "streamdeck.slack-status")
+// Must match `scripts/src/lib/state.ts` — see there for why not $TMPDIR.
+const STATE_FILE = join(
+  homedir(),
+  ".local",
+  "state",
+  "streamdeck",
+  "slack-status",
+)
 
 /**
  * The modes the key cycles through, mirroring `scripts/src/lib/slack.ts`.
@@ -34,7 +41,9 @@ const MODES = [
     text: "Focusing — back later",
     keyLabel: "Focus",
   },
-  { name: "away", emoji: ":palm_tree:", text: "Away", keyLabel: "Away" },
+  // Away sets presence only, so its status is empty — indistinguishable
+  // from `clear` via the API, which is why `statusLabel` takes a local record.
+  { name: "away", emoji: "", text: "", keyLabel: "Away" },
 ]
 
 /**

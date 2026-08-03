@@ -9,7 +9,7 @@ const MODES = [
     text: "Focusing — back later",
     keyLabel: "Focus",
   },
-  { name: "away", emoji: ":palm_tree:", text: "Away", keyLabel: "Away" },
+  { name: "away", emoji: "", text: "", keyLabel: "Away" },
 ]
 
 function fakeFetch(body: unknown, { ok = true, status = 200 } = {}) {

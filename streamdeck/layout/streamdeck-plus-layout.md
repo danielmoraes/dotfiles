@@ -69,8 +69,9 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
   countdown, amber inside 10 minutes. No feed URL or token — see its README for
   why an `.ics` feed wasn't viable.
 - **K7 Slack status** — shows your current status, read back from Slack. Press
-  cycles Online → 🔕 Focus → 🌴 Away (a real presence change, which needs the
-  `users:write` scope). Pass a preset name to `sd-slack-status` to jump.
+  cycles Online → 🔕 Focus → Away. Focus snoozes notifications for 90 min
+  (`dnd:write`); Away is a real presence change (`users:write`). Pass a preset
+  name to `sd-slack-status` to jump straight to one.
 
 **Dials:** same as Page 1, so agent quota stays visible from both working pages.
 

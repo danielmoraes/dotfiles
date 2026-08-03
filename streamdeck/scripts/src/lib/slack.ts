@@ -17,6 +17,14 @@ export type StatusPreset = {
   text: string
   /** `auto` lets Slack decide from activity; `away` forces the away dot. */
   presence: "auto" | "away"
+  /**
+   * Minutes to snooze notifications for, or 0 to end any active snooze.
+   *
+   * A 🔕 status emoji is decoration — it tells colleagues something and mutes
+   * nothing. Actually silencing Slack is `dnd.setSnooze`, a separate call and a
+   * separate scope, and without it a "Focusing" key is purely cosmetic.
+   */
+  dndMinutes: number
 }
 
 /**
@@ -34,6 +42,7 @@ export const PRESETS: readonly [StatusPreset, ...StatusPreset[]] = [
     emoji: "",
     text: "",
     presence: "auto",
+    dndMinutes: 0,
   },
   {
     name: "focus",
@@ -42,14 +51,23 @@ export const PRESETS: readonly [StatusPreset, ...StatusPreset[]] = [
     emoji: ":no_bell:",
     text: "Focusing — back later",
     presence: "auto",
+    // Long enough to cover a deep-work block; ending it is one more press.
+    dndMinutes: 90,
   },
   {
+    // No status text: away is a *presence*, and a message alongside it just
+    // adds noise to a colleague's sidebar for something the away dot already
+    // says. It does mean an empty status can't be told apart from `clear` by
+    // the API — see `presetFromStatus`.
     name: "away",
     label: "🌙 Away",
     keyLabel: "Away",
-    emoji: ":palm_tree:",
-    text: "Away",
+    emoji: "",
+    text: "",
     presence: "away",
+    // Stepping out isn't the same as heads-down: leave notifications alone so
+    // they still reach the phone.
+    dndMinutes: 0,
   },
 ]
 
@@ -77,8 +95,9 @@ export function nextPreset(current: string): StatusPreset {
 /**
  * Which preset a live Slack profile looks like.
  *
- * Presence can't be read without the `users:read` scope, so this matches on
- * status alone and callers fall back to their own record for away.
+ * Status alone can't distinguish `clear` from `away` — both leave it empty, and
+ * presence needs the `users:read` scope to read back. An empty status resolves
+ * to `clear`; callers that care fall back to their own record of the mode.
  */
 export function presetFromStatus(
   emoji: string,

@@ -1,5 +1,5 @@
-import { join } from "node:path"
 import type { Ctx } from "../lib/ctx"
+import { stateDir, statePath } from "../lib/state"
 import { runShortcut } from "../lib/shortcuts"
 import { slackStatusPayload } from "../lib/slack"
 
@@ -9,7 +9,7 @@ import { slackStatusPayload } from "../lib/slack"
  * second run using a state file.
  */
 export async function run(ctx: Ctx, _args: string[]): Promise<void> {
-  const stateFile = join(ctx.env.TMPDIR ?? "/tmp", "streamdeck.focus.state")
+  const stateFile = statePath("focus", ctx.home)
   if (await ctx.fs.exists(stateFile)) {
     await focusOff(ctx, stateFile)
   } else {
@@ -27,6 +27,7 @@ async function focusOn(ctx: Ctx, stateFile: string): Promise<void> {
       `tell application "Spotify" to play track "${playlist}"`,
     ])
   }
+  await ctx.fs.mkdirp(stateDir(ctx.home))
   await ctx.fs.writeFile(stateFile, "on\n")
   await ctx.notify("Focus", "Deep work ON")
 }

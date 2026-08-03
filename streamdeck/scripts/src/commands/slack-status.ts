@@ -1,5 +1,6 @@
 import { join } from "node:path"
 import type { Ctx } from "../lib/ctx"
+import { stateDir, statePath } from "../lib/state"
 import {
   type StatusPreset,
   PRESETS,
@@ -17,8 +18,15 @@ import {
  * one. The active preset is kept in a state file next to the other mode
  * commands' so the cycle survives between presses.
  */
+/** Slack's scope errors, translated into the fix rather than the symptom. */
+const SCOPE_HINTS: Record<string, string> = {
+  missing_scope: "needs a scope — see the plugin README",
+  not_allowed_token_type: "wrong token type",
+  invalid_auth: "token rejected",
+}
+
 export async function run(ctx: Ctx, args: string[]): Promise<void> {
-  const stateFile = join(ctx.env.TMPDIR ?? "/tmp", "streamdeck.slack-status")
+  const stateFile = statePath("slack-status", ctx.home)
 
   const requested = args[0]
   let preset: StatusPreset | undefined
@@ -44,7 +52,11 @@ export async function run(ctx: Ctx, args: string[]): Promise<void> {
   }
 
   /** POST to a Slack method with the token supplied over stdin, not argv. */
-  const post = async (method: string, body: string) =>
+  const post = async (
+    method: string,
+    body: string,
+    contentType = "application/json; charset=utf-8",
+  ) =>
     ctx.shell.run(
       "curl",
       [
@@ -55,7 +67,7 @@ export async function run(ctx: Ctx, args: string[]): Promise<void> {
         "POST",
         `https://slack.com/api/${method}`,
         "-H",
-        "Content-type: application/json; charset=utf-8",
+        `Content-type: ${contentType}`,
         "--data",
         body,
         "--config",
@@ -84,26 +96,60 @@ export async function run(ctx: Ctx, args: string[]): Promise<void> {
     return
   }
 
-  // Presence is a separate call, and a separate scope. Without `users:write`
-  // this fails while the status above succeeds — report it rather than let the
-  // key claim a mode it only half-applied.
-  const presence = await post(
+  /**
+   * Apply one side-effect and collect a human-readable complaint if Slack
+   * refuses. These are separate API calls behind separate scopes, so a mode can
+   * half-apply — the status lands while the presence or the snooze doesn't. The
+   * key must say so rather than claim the whole mode.
+   */
+  const problems: string[] = []
+  const apply = async (
+    what: string,
+    method: string,
+    body: string,
+    contentType = "application/json; charset=utf-8",
+  ): Promise<void> => {
+    const res = await post(method, body, contentType)
+    const failure = res.code === 0 ? slackError(res.stdout) : "unreachable"
+    if (failure) {
+      ctx.log(`Slack rejected the ${what} change: ${failure}`)
+      problems.push(`${what}: ${SCOPE_HINTS[failure] ?? failure}`)
+    }
+  }
+
+  await apply(
+    "presence",
     "users.setPresence",
     JSON.stringify({ presence: preset.presence }),
   )
-  const presenceError =
-    presence.code === 0 ? slackError(presence.stdout) : "unreachable"
-  if (presenceError) {
-    const hint =
-      presenceError === "missing_scope"
-        ? "add the users:write scope"
-        : presenceError
-    ctx.log(`Slack rejected the presence change: ${presenceError}`)
-    await ctx.notify("Slack status", `${preset.label} (presence: ${hint})`)
-    await ctx.fs.writeFile(stateFile, `${preset.name}\n`)
-    return
+
+  // Snoozing is what actually silences Slack; the 🔕 emoji above only tells
+  // people something. Ending a snooze is a different method, not zero minutes.
+  if (preset.dndMinutes > 0) {
+    await apply(
+      "notifications",
+      "dnd.setSnooze",
+      `num_minutes=${preset.dndMinutes}`,
+      "application/x-www-form-urlencoded",
+    )
+  } else {
+    const res = await post("dnd.endSnooze", "{}")
+    const failure = res.code === 0 ? slackError(res.stdout) : "unreachable"
+    // `snooze_not_active` just means there was nothing to end.
+    if (failure && failure !== "snooze_not_active") {
+      ctx.log(`Slack rejected the notifications change: ${failure}`)
+      problems.push(`notifications: ${SCOPE_HINTS[failure] ?? failure}`)
+    }
   }
 
+  // The mode is recorded even when part of it failed: the status did change,
+  // and the cycle has to stay in step with what Slack now shows.
+  await ctx.fs.mkdirp(stateDir(ctx.home))
   await ctx.fs.writeFile(stateFile, `${preset.name}\n`)
-  await ctx.notify("Slack status", preset.label)
+  await ctx.notify(
+    "Slack status",
+    problems.length > 0
+      ? `${preset.label} — ${problems.join(", ")}`
+      : preset.label,
+  )
 }

@@ -52,6 +52,8 @@ test("presetByName finds known presets only", () => {
   expect(presetByName("focus")?.emoji).toBe(":no_bell:")
   expect(presetByName("clear")?.text).toBe("")
   expect(presetByName("away")?.presence).toBe("away")
+  // Away carries no status text — the presence is the whole point.
+  expect(presetByName("away")?.text).toBe("")
   expect(presetByName("available")).toBeUndefined()
   expect(presetByName("lunch")).toBeUndefined()
 })
@@ -87,7 +89,8 @@ test("presetFromStatus recognises a live profile", () => {
   expect(presetFromStatus(":no_bell:", "Focusing — back later")?.name).toBe(
     "focus",
   )
-  expect(presetFromStatus(":palm_tree:", "Away")?.name).toBe("away")
+  // Away leaves the status empty, so from the API it looks like clear.
+  expect(presetFromStatus("", "")?.name).toBe("clear")
   // A status set by hand in Slack isn't one of ours.
   expect(presetFromStatus(":coffee:", "brb")).toBeUndefined()
 })
