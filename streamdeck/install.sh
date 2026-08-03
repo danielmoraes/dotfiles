@@ -5,7 +5,7 @@
 # - Builds the TypeScript glue commands and links the executables into
 #   ~/.local/bin as `sd-<name>`.
 # - Creates a git-ignored secrets template at ~/.config/streamdeck/secrets.env.
-# - Prints the plugin install checklist.
+# - Builds and links the plugins, then prints how to write the profile.
 #
 # Safe to re-run (idempotent).
 
@@ -134,7 +134,6 @@ ICAL_URL=
 STREAMDECK_TERMINAL=terminal        # terminal|iterm|wezterm|kitty
 STREAMDECK_DEFAULT_REPO=$HOME/code
 STREAMDECK_INBOX=$HOME/inbox.md
-STREAMDECK_FOCUS_PLAYLIST=          # spotify: URI
 EOF
   chmod 600 "$SECRETS"
   ok "Created secrets template: $SECRETS (fill it in)"
@@ -161,17 +160,16 @@ if command -v pnpm >/dev/null 2>&1 && [[ -d "$PLUGINS_DIR" ]]; then
   done
 fi
 
-# 6. Plugin checklist (the ones we can't install for you)
+# 6. Write the profile
+#
+# No third-party plugin checklist any more: every plugin the deck binds is built
+# in this repo and linked by step 5 above. The last two it listed had already
+# been replaced by local plugins — `stream-deck-ical` by `calendar`, and
+# `mediabounds/streamdeck-jira` by `jira` — and the Spotify and quota-gauge
+# entries went with the keys and dial that used them. See
+# streamdeck/plugins/README.md ("Considered but not chosen").
 echo
-info "Install these from their releases (see streamdeck/plugins/README.md)"
-cat <<'EOF'
-  [ ] stream-deck-ai-limits     github.com/lenadweb/stream-deck-ai-limits
-  [ ] stream-deck-ical          github.com/pedrofuentes/stream-deck-ical
-  [ ] essentials-for-spotify    github.com/ntanis-dev/essentials-for-spotify
-  [ ] streamdeck-jira           github.com/mediabounds/streamdeck-jira
-EOF
-echo
-info "Then write the 3-page profile onto the deck:"
+info "Write the 3-page profile onto the deck:"
 cat <<'EOF'
   osascript -e 'tell application "Elgato Stream Deck" to quit'
   pnpm -C streamdeck/profiles apply

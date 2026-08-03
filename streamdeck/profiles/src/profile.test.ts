@@ -119,16 +119,25 @@ test("the blank Default page exists but is not in the visible cycle", () => {
   expect(isRecord(blank)).toBe(true)
 })
 
-test("every page fills all 8 keys; dials are the same subset everywhere", () => {
-  // Only 2 of 4 dials are filled today (cswap accounts, system volume).
-  // Everything tried in the gaps was pulled rather than left holding a dead,
-  // broken or duplicate control — see DIAL_STRIP's comment. Keys have no such
-  // out: all 8 are always bound.
+test("every key slot is bound bar the open ones; dials are the same subset everywhere", () => {
+  // Only 2 of 4 dials are filled today (cswap accounts, system volume), and
+  // Modes' K5/K6 are open since the Spotify transport keys went. Everything
+  // tried in those gaps was pulled rather than left holding a dead, broken or
+  // duplicate control — see DIAL_STRIP's comment and MODES'. Every other slot
+  // is bound.
+  const open: Record<string, string[]> = { Modes: ["0,1", "1,1"] }
   for (const page of PAGES) {
     const { keypad, encoder } = controllers(pageManifest(page))
+    const gaps = open[page.title] ?? []
     expect(Object.keys(keypad).length, `${page.title} keys`).toBe(
-      COLUMNS * ROWS,
+      COLUMNS * ROWS - gaps.length,
     )
+    for (const slot of gaps) {
+      expect(
+        keypad[slot],
+        `${page.title} ${slot} should be open`,
+      ).toBeUndefined()
+    }
     expect(Object.keys(encoder).sort(), `${page.title} dials`).toEqual([
       "0,0",
       "3,0",
@@ -189,10 +198,10 @@ test("multimedia dials are Elgato's built-in system action, unscoped to a plugin
 })
 
 test("D1 is the cswap accounts dial, and it's the only quota readout", () => {
-  // Two other plugins held a dial showing the *signed-in* account's quota
-  // (AgentDeck's gauge, then AI Usage Limits). Both were dropped as duplicates
-  // of each other and of this, which covers every account and switches between
-  // them. A second quota dial reappearing is the regression worth catching.
+  // Two other plugins each held a dial showing only the *signed-in* account's
+  // quota. Both were dropped as duplicates of each other and of this, which
+  // covers every account and switches between them. A second quota dial
+  // reappearing is the regression worth catching.
   const { encoder } = controllers(pageManifest(PAGES[0]!))
   const d1 = encoder["0,0"]
   if (!isRecord(d1) || !isRecord(d1.Plugin)) {
@@ -211,17 +220,23 @@ test("D1 is the cswap accounts dial, and it's the only quota readout", () => {
   }
 })
 
-test("nothing on the deck is an AgentDeck action any more", () => {
-  // The dial strip lost its AgentDeck actions first — a dial that goes dead
-  // whenever a daemon is down had no business controlling system volume. Page
-  // 1's session keys followed once `sessions` replaced them: same daemon
-  // behind the data, but the artwork is ours, so nothing here binds a
-  // third-party action whose rendering we can't change.
+test("every plugin action is one built in this repo", () => {
+  // Third-party plugins left one at a time: AgentDeck's dials first (a dial
+  // that goes dead whenever a daemon is down had no business controlling
+  // system volume), then its session-slot key once `sessions` replaced it,
+  // then the quota gauge and the Spotify transport keys. Nothing here binds an
+  // action whose rendering or data we can't change, and `install.sh` no longer
+  // asks you to download anything — which only stays true if this holds.
+  //
+  // Only entries with a Plugin block are checked: system actions (next page,
+  // multimedia) are Elgato's own `com.elgato.streamdeck.*` and carry none.
   for (const page of PAGES) {
     const { keypad, encoder } = controllers(pageManifest(page))
     for (const entry of [...Object.values(keypad), ...Object.values(encoder)]) {
-      if (isRecord(entry)) {
-        expect(String(entry.UUID), `${page.title}`).not.toMatch(/agentdeck/)
+      if (isRecord(entry) && isRecord(entry.Plugin)) {
+        expect(String(entry.Plugin.UUID), `${page.title}`).toMatch(
+          /^com\.dmoraes\./,
+        )
       }
     }
   }

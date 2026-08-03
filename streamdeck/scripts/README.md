@@ -31,8 +31,8 @@ src/
 | ------------------ | -------------------------------------------------------------------------- |
 | `sd-summon-agent`  | Launch `claude` \| `codex` \| `pi` in a terminal                           |
 | `sd-summon-claude` | Open a terminal in the repo and start Claude Code, optional prompt         |
-| `sd-focus-mode`    | Toggle deep-work Focus (Shortcut + Slack status + playlist)                |
-| `sd-meeting-mode`  | Toggle meeting mode (pause music + Focus/mic Shortcut)                     |
+| `sd-focus-mode`    | Toggle deep-work Focus (Shortcut + Slack status)                           |
+| `sd-meeting-mode`  | Toggle meeting mode (Focus/mic Shortcut)                                   |
 | `sd-quick-capture` | Prompt and append to inbox, or open a GitHub issue                         |
 | `sd-standup`       | Copy a summary of merged PRs since yesterday to the clipboard              |
 | `sd-slack-status`  | Cycle Slack status (available / focus / lunch / clear), or set one by name |
@@ -52,7 +52,14 @@ pointing at the `sd-<name>` executable.
 
 Config comes from `~/.config/streamdeck/secrets.env` (scaffolded by
 `install.sh`): `STREAMDECK_TERMINAL`, `STREAMDECK_DEFAULT_REPO`,
-`STREAMDECK_INBOX`, `STREAMDECK_FOCUS_PLAYLIST`, `SLACK_TOKEN`.
+`STREAMDECK_INBOX`, `SLACK_TOKEN`.
+
+Neither mode command touches a music player any more. Both drove Spotify over
+AppleScript — `sd-focus-mode` started `STREAMDECK_FOCUS_PLAYLIST`,
+`sd-meeting-mode` paused playback — and `tell application "Spotify"` _launches_
+Spotify when it isn't running, so without it installed the key opened an unused
+app. Put it in the "Focus On" / "Meeting On" Shortcut instead, where it can name
+whichever player is actually in use.
 
 `realCtx()` loads that file itself via [`../secrets/`](../secrets/src/index.ts).
 Keys invoke these commands through the Stream Deck app, which passes the _login_

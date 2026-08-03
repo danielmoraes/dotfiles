@@ -40,8 +40,9 @@ of it. Three Claude-quota dials have been through here:
   "session" rotation was already dead weight — it reads 0/0 unless the session
   was started through the `agentdeck` CLI wrapper, and these start as plain
   `claude`.
-- **AI Usage Limits** (`com.len.limits.progress`) — taken on as a
-  daemon-independent second readout, dropped for the same duplication.
+- **A third-party quota gauge** — taken on as a daemon-independent second
+  readout, dropped for the same duplication. See
+  [_Considered but not chosen_](../plugins/README.md#considered-but-not-chosen).
 - **cswap** — what's left. The useful question when you run two accounts is
   "how much is left on the _other_ one, and can I jump to it", which is the one
   neither of the others could answer.
@@ -185,25 +186,34 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 
 ---
 
-## Page 3 — Modes, media & metrics
+## Page 3 — Modes & metrics
 
 ```
 [K1] Focus mode       [K2] Meeting mode    [K3] Quick capture   [K4] Weekly metrics
      (script)             (script)             (script)             (weekly-metrics)
 
-[K5] Play / Pause     [K6] Next song       [K7] Standup         [K8] Agents ▶
-     (spotify)            (spotify)            (script)             (home)
+[K5] —                [K6] —               [K7] Standup         [K8] Agents ▶
+     open                 open                 (script)             (home)
 ```
 
-- **K1 Focus mode** — `sd-focus-mode`: macOS Focus, Slack status, focus playlist.
-- **K2 Meeting mode** — `sd-meeting-mode`: mute mic, DND, pause music.
+- **K1 Focus mode** — `sd-focus-mode`: macOS Focus and Slack status.
+- **K2 Meeting mode** — `sd-meeting-mode`: mute mic + DND, via a Shortcut.
 - **K3 Quick capture** — `sd-quick-capture`: append to your inbox / open an issue.
 - **K4 Weekly metrics** — press cycles coding hours → PRs merged → meetings
   (meetings also come from the local calendar).
-- **K5/K6 Spotify** — `essentials-for-spotify`. Still Spotify-specific; unlike
-  the dials above, these weren't in scope for the media-generalisation pass —
-  worth a look if Spotify isn't the daily driver here either.
+- **K5/K6 open** — they were `essentials-for-spotify` play-pause and next-song
+  keys, dropped when Spotify stopped being the player here. Nothing replaced
+  them, for the reason the media-transport _dial_ was pulled above: Focus@Will
+  swallows every generic media command, so a transport key would be just as
+  dead. Empty rather than filled for its own sake, same as D2/D3.
 - **K7 Standup** — `sd-standup`: yesterday's merged PRs and commits to the clipboard.
+
+The two mode scripts lost their Spotify AppleScript along with the keys —
+`sd-focus-mode` no longer starts a playlist and `sd-meeting-mode` no longer
+pauses one. `tell application "Spotify"` _launches_ Spotify when it isn't
+running, so on a Mac without it those lines opened an unused app rather than
+doing nothing. Add it back inside the "Meeting On" / "Focus On" Shortcut if it's
+wanted — that's user-editable and can name whichever player is actually in use.
 
 **Dials:** see [above](#dials-every-page) — same on every page.
 

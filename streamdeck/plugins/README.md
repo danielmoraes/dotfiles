@@ -8,7 +8,6 @@ Stream Deck app 6.9+).
 
 | #   | Plugin                     | UUID                          | Used on          | Source                                                                                    | SDK   |
 | --- | -------------------------- | ----------------------------- | ---------------- | ----------------------------------------------------------------------------------------- | ----- |
-| 4   | **Essentials for Spotify** | `com.ntanis-dev…`             | P3 K5/K6         | [ntanis-dev/essentials-for-spotify](https://github.com/ntanis-dev/essentials-for-spotify) | ✅ v3 |
 | 6   | **github-stats**           | `com.dmoraes.github-stats`    | P2 K1–K3         | [`github-stats/`](github-stats/) (this repo)                                              | ✅ v3 |
 | 7   | **slack-unread**           | `com.dmoraes.slack-unread`    | P2 K5            | [`slack-unread/`](slack-unread/README.md) (this repo)                                     | ✅ v3 |
 | 8   | **weekly-metrics**         | `com.dmoraes.weekly-metrics`  | P3 K4            | [`weekly-metrics/`](weekly-metrics/README.md) (this repo)                                 | ✅ v3 |
@@ -22,10 +21,23 @@ Action UUIDs for each are in
 [`../profiles/src/layout.ts`](../profiles/src/layout.ts) — that file is the only
 place they're referenced.
 
+**Everything on the deck is now built here.** The last third-party plugin
+(`essentials-for-spotify`, P3 K5/K6) went when Spotify stopped being the player
+on this machine; those two keys are open rather than repointed, because the
+player that took over ignores every generic media command. See
+[_Considered but not chosen_](#considered-but-not-chosen) below.
+
+So there is **nothing to install by hand** — `install.sh` builds and links every
+plugin the deck binds, and no longer prints a download checklist. It listed four
+for a while, and each was replaced or dropped: `stream-deck-ical` by `calendar`,
+`mediabounds/streamdeck-jira` by `jira`, and the Spotify and quota-gauge plugins
+by the removals below. A `com.dmoraes.` prefix on every action UUID is asserted
+in [`../profiles/src/profile.test.ts`](../profiles/src/profile.test.ts), so a
+third-party plugin sneaking back into the layout fails the suite.
+
 **cswap** holds D1, and is the only Claude-quota dial left: usage limits for
 _every_ managed account, which is active, and a press to switch. Two dials that
-each showed only the signed-in account's quota (AgentDeck's gauge, then AI Usage
-Limits) were dropped as duplicates of it.
+each showed only the signed-in account's quota were dropped as duplicates of it.
 
 **AgentDeck is gone entirely** — plugin and daemon both. Page 1's session keys
 were the last thing using it, and [`sessions`](sessions/README.md) reads the
@@ -43,6 +55,14 @@ for both.
 
 ### Considered but not chosen
 
+- **Essentials for Spotify** (`com.ntanis-dev…`) — held P3 K5/K6 (play-pause,
+  next song) until Spotify stopped being the player here. Not replaced with a
+  generic media key: the player that took over is Focus@Will, which swallows
+  every media command on every sender — see the dial note above. The slots are
+  open, and `sd-focus-mode` / `sd-meeting-mode` lost their Spotify AppleScript
+  for the same reason, plus a sharper one: `tell application "Spotify"` starts
+  the app if it isn't running, so on a Mac without it the key launched
+  something you don't use.
 - **AI Usage Limits** (`com.len.limits`) and **AgentDeck's Claude gauge**
   (`option-dial`) — both held a dial showing the quota of whichever account
   you're signed in as, which meant two dials answering the same question, then

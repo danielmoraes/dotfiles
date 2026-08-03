@@ -19,7 +19,7 @@ with one command.
 | [`secrets/`](secrets/src/index.ts)                                     | Loads `~/.config/streamdeck/secrets.env` for plugins and scripts.                 |
 | [`ical/`](ical/src/index.ts)                                           | Reads the local macOS Calendar via `icalBuddy` (next meeting, weekly meetings).   |
 | [`icons/`](icons/README.md)                                            | Icon style, and the generator for the PNG plugin icons.                           |
-| [`install.sh`](install.sh)                                             | Bootstrap: builds and links the scripts, scaffolds secrets, prints the checklist. |
+| [`install.sh`](install.sh)                                             | Bootstrap: builds and links the scripts and plugins, scaffolds secrets.           |
 
 ## Quick start on a new Mac
 
@@ -30,8 +30,7 @@ brew install --cask elgato-stream-deck
 # 2. Bootstrap: build + link the sd-* commands, scaffold secrets
 ./streamdeck/install.sh
 
-# 3. Install the third-party plugins listed in plugins/README.md,
-#    and build + link the custom ones
+# 3. Build + link the plugins (all of them live in plugins/)
 pnpm run build
 
 # 4. Write the 3-page profile onto the deck (app must be quit)
@@ -44,13 +43,14 @@ Then fill in `~/.config/streamdeck/secrets.env` for the status keys.
 
 ## Design principles
 
-- **Glance-first.** Status keys (PRs, Slack, meetings, AI limits) are read-only
+- **Glance-first.** Status keys (PRs, Slack, meetings, CI) are read-only
   and colour-coded, so the deck is useful without touching it.
 - **The layout is data.** [`profiles/src/layout.ts`](profiles/src/layout.ts) is
   the source of truth; the app's profile is generated from it and re-generating
   is idempotent. The deck is reviewable in a diff.
-- **Modern SDK.** Every plugin here is on Elgato's Node.js SDK v2
-  (`SDKVersion: 3`) bar one — see `plugins/README.md` for the per-plugin verdict.
+- **Modern SDK.** Every plugin the deck binds is built in this repo, on Elgato's
+  Node.js SDK v2 (`SDKVersion: 3`) — see `plugins/README.md` for what was
+  considered and dropped.
 - **Logic in scripts, not in the app.** Keys use _Open_ actions pointing at the
   built `sd-*` commands, so behaviour is version-controlled and testable and the
   profile stays thin.
@@ -70,7 +70,7 @@ pnpm run build       # bundle the plugins + scripts
 ## Hardware note
 
 This targets the **Stream Deck +**: 8 LCD keys + a 4-dial touch strip. Dials
-carry continuous/rotary actions (agent quota, volume, Spotify) and the touch
-strip shows live readouts. On a different model the key pages still apply — you
+carry continuous/rotary actions (agent quota, volume) and the touch strip shows
+live readouts. On a different model the key pages still apply — you
 just lose the dial row, and `profiles/src/layout.ts` needs its `COLUMNS`/`ROWS`
 and the model id in `profiles/src/install.ts` adjusted.

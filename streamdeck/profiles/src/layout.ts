@@ -46,11 +46,6 @@ const JIRA: PluginRef = {
   uuid: "com.dmoraes.jira",
   version: "0.1.0.0",
 }
-const SPOTIFY: PluginRef = {
-  name: "Essentials for Spotify",
-  uuid: "com.ntanis.essentials-for-spotify",
-  version: "1.2.0.0",
-}
 const CSWAP: PluginRef = {
   name: "Claude Accounts",
   uuid: "com.dmoraes.cswap",
@@ -176,10 +171,9 @@ const SYSTEM_VOLUME: Binding = {
  *   `iterm-dial` = Codex), so it can't be repointed.
  * - AgentDeck's Claude gauge (`option-dial`) followed it once `cswap` landed.
  *   It only ever showed the signed-in account, which `cswap` covers as one row
- *   of several — so keeping it meant two dials answering the same question,
- *   the exact duplication that cost AI Usage Limits its slot. That took the
- *   AgentDeck daemon out of the dial strip; page 1's session keys later moved
- *   off it too, so nothing on the deck depends on it now.
+ *   of several — so keeping it meant two dials answering the same question.
+ *   That took the AgentDeck daemon out of the dial strip; page 1's session keys
+ *   later moved off it too, so nothing on the deck depends on it now.
  * - The Launcher dial went the way of the old launch keys: not reached for.
  * - A generic media-transport dial (`actionIdx: 22` on the same built-in
  *   `system.multimedia` action as `SYSTEM_VOLUME`) doesn't reach Focus@Will.
@@ -195,9 +189,6 @@ const SYSTEM_VOLUME: Binding = {
  *   it can reach the app's own `globalShortcut.register("MediaPlayPause", …)`
  *   listener, which is what would have actually worked. This is a Focus@Will
  *   bug, not fixable from the Stream Deck side.
- * - AI Usage Limits' quota gauge held a slot for a while, as a readout that
- *   didn't depend on the AgentDeck daemon. Same duplication: it showed the
- *   signed-in account's quota and nothing else.
  *
  * What's left on D1 is `cswap`, which answers what none of them could — how
  * much is left on *each* account, which one is active, and switching between
@@ -325,10 +316,14 @@ const WORK: Page = {
 }
 
 /**
- * Page 3 — Modes, media & metrics.
+ * Page 3 — Modes & metrics.
  *
- * K5/K6 are still Spotify-specific — they're unrelated to today's dial
- * change, but worth a look if Spotify isn't the daily driver here either.
+ * K5/K6 are open. They held `essentials-for-spotify` transport keys, which went
+ * when Spotify stopped being the player here. Nothing replaced them: the player
+ * that took over is Focus@Will, and it ignores every generic media command —
+ * see `DIAL_STRIP` for the two independent confirmations and the root cause. So
+ * a media-transport key would be as dead as the dial was, and the slots stay
+ * empty rather than filled for their own sake. Same rule as D2/D3.
  */
 const MODES: Page = {
   title: "Modes",
@@ -343,18 +338,8 @@ const MODES: Page = {
       name: "Weekly Metric",
       settings: { cycle: ["coding", "prs-merged", "meetings"] },
     },
-    {
-      kind: "plugin",
-      plugin: SPOTIFY,
-      action: "com.ntanis.essentials-for-spotify.play-pause-button",
-      name: "Play / Pause",
-    },
-    {
-      kind: "plugin",
-      plugin: SPOTIFY,
-      action: "com.ntanis.essentials-for-spotify.next-song-button",
-      name: "Next Song",
-    },
+    null,
+    null,
     run("sd-standup", "Standup"),
     { kind: "nextPage", title: "Agents ▶" },
   ],

@@ -16,12 +16,13 @@ marked, and one press to switch between them. Lives on **D1**.
 
 ## Why this exists
 
-Two dials here (AgentDeck's Claude gauge and AI Usage Limits) both showed the
-quota of whichever account you happen to be signed in as — the same number
-twice, from two daemons. Neither could see the _other_ account, which is the
-thing actually worth a dial when you run two. Both are gone; this took their
-place, covering the signed-in account as one row of several, and needs no
-daemon at all.
+Two dials here — AgentDeck's Claude gauge and a third-party quota plugin — both
+showed the quota of whichever account you happen to be signed in as: the same
+number twice, from two daemons. Neither could see the _other_ account, which is
+the thing actually worth a dial when you run two. Both are gone; this took their
+place, covering the signed-in account as one row of several, and needs no daemon
+at all. See
+[_Considered but not chosen_](../README.md#considered-but-not-chosen).
 
 ## Where the data comes from
 
@@ -70,9 +71,9 @@ protocol to add what cswap already answers in one JSON call wasn't worth it.
 Keys pick between pre-authored images with `setState` and write their value with
 `setTitle`. A dial has neither: the LCD strip is drawn only through
 `setFeedback`, whose one full-canvas `pixmap` item takes an image. So a dial
-showing live values has to generate one. Both third-party dials on this deck do
-the same. `src/render.ts` is pure — accounts in, markup out — so the layout is
-tested by asserting on the SVG rather than by looking at hardware.
+showing live values has to generate one. Both third-party dials that preceded
+this one did the same. `src/render.ts` is pure — accounts in, markup out — so
+the layout is tested by asserting on the SVG rather than by looking at hardware.
 
 ## Settings
 
