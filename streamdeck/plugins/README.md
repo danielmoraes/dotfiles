@@ -61,6 +61,17 @@ rm -rf "$dest"
 ln -s "$PWD/streamdeck/plugins/github-stats/com.dmoraes.github-stats.sdPlugin" "$dest"
 ```
 
+### Key colours
+
+Two-state keys use the accent rule at the bottom of the key image: **blue = quiet**,
+**red = needs attention** (count at/above `warnAt`; for the calendar key, amber
+inside `warnMinutes`). The state is set by the plugin from live data.
+
+Any action with more than one `States` entry **must** set
+`"DisableAutomaticStates": true`. Without it the Stream Deck app toggles the
+state itself on every press, so the colour flips to whatever is next in the list
+and no longer reflects the data until the following refresh.
+
 ### Manifest gotchas
 
 Learned the hard way — the app rejects a plugin silently apart from one line in
@@ -72,6 +83,7 @@ Learned the hard way — the app rejects a plugin silently apart from one line i
   `Plugin invalid '<uuid>': (category icon not defined)`.
 - The plugin **`Icon` must be PNG** (256 + 512 `@2x`). Every other image slot
   takes SVG. See [`../icons/`](../icons/README.md).
+- **`DisableAutomaticStates` defaults to `false`** — see the section above.
 
 ## Icons
 

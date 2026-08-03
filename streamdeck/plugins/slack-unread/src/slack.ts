@@ -139,15 +139,16 @@ export function selectCount(unread: Unread, mode: UnreadMode = "all"): number {
 }
 
 /**
- * Key title: the count, or a bullet when there's unread channel activity that
- * doesn't warrant a badge — which is what Slack's own sidebar shows.
+ * Key title: always the count.
+ *
+ * An earlier version showed `•` for unread channel activity carrying no badge,
+ * mirroring Slack's sidebar. At key size that read as a smudge and had to be
+ * explained to be understood, which is the definition of a failed glyph — so
+ * the key shows only what it can state plainly. `bullet` is still parsed and
+ * available on `Unread` for anything that wants it.
  */
 export function formatTitle(unread: Unread, mode: UnreadMode = "all"): string {
-  const n = selectCount(unread, mode)
-  if (n > 0) {
-    return String(n)
-  }
-  return unread.bullet ? "•" : "0"
+  return String(selectCount(unread, mode))
 }
 
 /** Two-state key helper: 0 = quiet, 1 = attention (count at/above threshold). */

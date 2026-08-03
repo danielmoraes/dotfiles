@@ -10,12 +10,23 @@
   "Icon": "imgs/plugin/icon",
   "URL": "https://github.com/danielmoraes/dotfiles",
   "SDKVersion": 3,
-  "Software": { "MinimumVersion": "6.9" },
+  "Software": {
+    "MinimumVersion": "6.9"
+  },
   "OS": [
-    { "Platform": "mac", "MinimumVersion": "12" },
-    { "Platform": "windows", "MinimumVersion": "10" }
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
   ],
-  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
   "CodePath": "bin/plugin.js",
   "Actions": [
     {
@@ -24,6 +35,7 @@
       "Icon": "imgs/actions/search-count/icon",
       "Tooltip": "Show the number of results for a GitHub search (e.g. PRs to review).",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/search-count/key",
@@ -42,7 +54,10 @@
       "Tooltip": "Show the latest CI conclusion for a repo branch.",
       "Controllers": ["Keypad"],
       "States": [
-        { "Image": "imgs/actions/ci-status/key", "TitleAlignment": "middle" }
+        {
+          "Image": "imgs/actions/ci-status/key",
+          "TitleAlignment": "middle"
+        }
       ]
     }
   ]

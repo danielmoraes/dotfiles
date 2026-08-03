@@ -10,9 +10,19 @@
   "Icon": "imgs/plugin/icon",
   "URL": "https://github.com/danielmoraes/dotfiles",
   "SDKVersion": 3,
-  "Software": { "MinimumVersion": "6.9" },
-  "OS": [{ "Platform": "mac", "MinimumVersion": "12" }],
-  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "Software": {
+    "MinimumVersion": "6.9"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
   "CodePath": "bin/plugin.js",
   "Actions": [
     {
@@ -21,6 +31,7 @@
       "Icon": "imgs/actions/next-meeting/icon",
       "Tooltip": "Show the next meeting and a countdown. Press to open Calendar.",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/next-meeting/key",

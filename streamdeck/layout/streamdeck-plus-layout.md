@@ -62,9 +62,8 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 - **K4 Jira** — `streamdeck-jira` JQL result count. Set the JQL in its
   Property Inspector.
 - **K5 Slack unread** — Slack's own badge (DMs + mentions), read from the
-  desktop app's local state; `•` for unread channels with no badge. Red at ≥ 1.
-  Press opens Slack. Needs no token — see the plugin README for why the API
-  route is closed.
+  desktop app's local state. Red at ≥ 1. Press opens Slack. Needs no token —
+  see the plugin README for why the API route is closed.
 - **K6 Next meeting** — local macOS Calendar via the `calendar` plugin; title +
   countdown, amber inside 10 minutes. No feed URL or token — see its README for
   why an `.ics` feed wasn't viable.

@@ -106,24 +106,24 @@ test("selectCount switches between the badge and mentions only", () => {
   expect(selectCount(unread, "highlights")).toBe(1)
 })
 
-test("formatTitle shows a bullet for unread activity with no badge", () => {
+test("formatTitle is always a plain count, never a glyph", () => {
   expect(
     formatTitle({ unreads: 5, highlights: 1, bullet: true, workspaces: 1 }),
   ).toBe("5")
-  // Nothing badge-worthy, but channels have unread messages.
+  // Unread channel activity with no badge reads as 0 — a bullet here had to be
+  // explained to be understood, so the key states only what it can state.
   expect(
     formatTitle({ unreads: 0, highlights: 0, bullet: true, workspaces: 1 }),
-  ).toBe("•")
+  ).toBe("0")
   expect(
     formatTitle({ unreads: 0, highlights: 0, bullet: false, workspaces: 1 }),
   ).toBe("0")
-  // In highlights mode the bullet still stands in for "something is unread".
   expect(
     formatTitle(
       { unreads: 5, highlights: 0, bullet: true, workspaces: 1 },
       "highlights",
     ),
-  ).toBe("•")
+  ).toBe("0")
 })
 
 test("countState flips at the threshold", () => {

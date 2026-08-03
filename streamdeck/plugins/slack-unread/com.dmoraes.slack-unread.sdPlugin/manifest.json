@@ -10,12 +10,23 @@
   "Icon": "imgs/plugin/icon",
   "URL": "https://github.com/danielmoraes/dotfiles",
   "SDKVersion": 3,
-  "Software": { "MinimumVersion": "6.9" },
+  "Software": {
+    "MinimumVersion": "6.9"
+  },
   "OS": [
-    { "Platform": "mac", "MinimumVersion": "12" },
-    { "Platform": "windows", "MinimumVersion": "10" }
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
   ],
-  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
   "CodePath": "bin/plugin.js",
   "Actions": [
     {
@@ -24,6 +35,7 @@
       "Icon": "imgs/actions/unread-count/icon",
       "Tooltip": "Show unread Slack mentions/DMs. Press to open Slack.",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
           "Image": "imgs/actions/unread-count/key",

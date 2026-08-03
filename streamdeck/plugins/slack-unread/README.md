@@ -4,9 +4,9 @@ Stream Deck plugin: unread Slack mentions/DMs on a key (Page 2 · K5).
 
 ## Action
 
-| Action           | Controller | What it shows                                                                                        |
-| ---------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
-| **Unread Count** | Keypad     | Slack's own badge number; `•` for unread channels with no badge; red at `warnAt`. Press opens Slack. |
+| Action           | Controller | What it shows                                                                  |
+| ---------------- | ---------- | ------------------------------------------------------------------------------ |
+| **Unread Count** | Keypad     | Slack's own badge number (DMs + mentions); red at `warnAt`. Press opens Slack. |
 
 ## Settings
 
