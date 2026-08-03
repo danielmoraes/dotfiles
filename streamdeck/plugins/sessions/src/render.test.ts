@@ -32,7 +32,7 @@ test("named: the name leads and the repo sits under it", () => {
   // The name you chose is the identity, so it takes the heading...
   expect(svg).toMatch(/font-size="17"[^>]*>stream deck</)
   // ...and the repo becomes the context line beneath it.
-  expect(svg).toMatch(/font-size="11"[^>]*>steward</)
+  expect(svg).toMatch(/font-size="13"[^>]*>steward</)
   // The slug is not worth a line once there's a name.
   expect(svg).not.toContain(">calm-mapping-tw…<")
 })
@@ -44,7 +44,7 @@ test("a named session in a plain checkout still shows its repo", () => {
     worktree: undefined,
   })
   expect(svg).toMatch(/font-size="17"[^>]*>stream deck</)
-  expect(svg).toMatch(/font-size="11"[^>]*>steward</)
+  expect(svg).toMatch(/font-size="13"[^>]*>steward</)
 })
 
 test("the terminal rides along, so a key leads back to a window", () => {
@@ -85,26 +85,26 @@ test("a session with no start time still shows what it has", () => {
 test("context over 100% is told truthfully but drawn clamped", () => {
   const svg = renderSlot({ ...RUNNING, contextPercent: 120.4 })
   expect(svg, "the number is the real one").toContain(">120%<")
-  // The fill is the full track width (90 - 20), never wider.
-  expect(svg).toContain('width="70"')
+  // The fill is the full track width (88 - 20), never wider.
+  expect(svg).toContain('width="68"')
   expect(svg).not.toMatch(
-    /width="(7[1-9]|[89][0-9]|1[0-9][0-9])(\.\d+)?"\s+height="6"/,
+    /width="(69|[7-9][0-9]|1[0-9][0-9])(\.\d+)?"\s+height="7"/,
   )
 })
 
 test("the bar stops clear of the widest percentage it has to sit beside", () => {
-  // `181%` is ~28px at 11px semibold, right-aligned to x=124 — so it occupies
-  // roughly x=96 onward. A track ending past that is drawn under the number,
+  // `181%` is ~30px at 12px semibold, right-aligned to x=124 — so it occupies
+  // roughly x=94 onward. A track ending past that is drawn under the number,
   // which is exactly what a two-digit-sized track did.
   const svg = renderSlot({ ...RUNNING, contextPercent: 181 })
   const track = svg.match(
-    /<rect x="20" y="92" width="(\d+(?:\.\d+)?)" height="6"/,
+    /<rect x="20" y="86" width="(\d+(?:\.\d+)?)" height="7"/,
   )
   if (!track?.[1]) {
     throw new Error("no context track drawn")
   }
   const trackEnd = 20 + Number(track[1])
-  const widestLabel = 4 * 7 // 4 characters, generously wide
+  const widestLabel = 4 * 7.6 // 4 characters at 12px, generously wide
   expect(trackEnd).toBeLessThanOrEqual(124 - widestLabel)
 })
 

@@ -34,14 +34,26 @@ const RIGHT = SIZE - LEFT
  *
  * The percentage is right-aligned into the column after it, and that column has
  * to fit the widest reading — not `87%` but `181%`, because context can exceed
- * 100 once compaction is in play. Four characters at 11px semibold is ~28px,
+ * 100 once compaction is in play. Four characters at 12px semibold is ~30px,
  * plus a gap. Sizing this to a two-digit reading is what put the bar under the
  * number the first time.
  *
  * Fixed rather than derived from the label: all seven bars are the same length,
  * so they can be compared across keys at a glance.
  */
-const BAR_RIGHT = RIGHT - 34
+const BAR_RIGHT = RIGHT - 36
+
+/**
+ * The four rows, as text baselines (the bar is a rect, so `bar` is its top).
+ *
+ * Kept in one place because the whole key is a vertical rhythm and the rows
+ * only look right relative to each other. The first cut left a 30px hole
+ * between the second line and the bar — the rows had been placed one at a time
+ * rather than spaced against each other.
+ */
+const ROW = { heading: 44, sub: 66, bar: 86, foot: 120 }
+/** Bar thickness. */
+const BAR_H = 7
 
 const BG = "#16191F"
 const PANEL_FILL = "#1F242C"
@@ -161,17 +173,16 @@ function border(slot: Slot, frame: number): string {
 
 /** Context window usage: a bar, and the number beside it. */
 function contextRow(pct: number): string {
-  const y = 92
-  const height = 6
+  const y = ROW.bar
   const colour = severity(pct)
   const filled = round(((BAR_RIGHT - LEFT) * Math.min(pct, 100)) / 100)
   return [
-    `<rect x="${LEFT}" y="${y}" width="${BAR_RIGHT - LEFT}" height="${height}" rx="${height / 2}" fill="${TRACK}"/>`,
+    `<rect x="${LEFT}" y="${y}" width="${BAR_RIGHT - LEFT}" height="${BAR_H}" rx="${BAR_H / 2}" fill="${TRACK}"/>`,
     filled > 0
-      ? `<rect x="${LEFT}" y="${y}" width="${filled}" height="${height}" rx="${height / 2}" fill="${colour}"/>`
+      ? `<rect x="${LEFT}" y="${y}" width="${filled}" height="${BAR_H}" rx="${BAR_H / 2}" fill="${colour}"/>`
       : "",
-    text(RIGHT, y + height, `${Math.round(pct)}%`, {
-      size: 11,
+    text(RIGHT, y + BAR_H, `${Math.round(pct)}%`, {
+      size: 12,
       fill: colour,
       weight: "600",
       anchor: "end",
@@ -206,12 +217,14 @@ export function renderSlot(slot: Slot, frame = 0): string {
       border(slot, frame),
       identity(slot),
       slot.contextPercent === undefined ? "" : contextRow(slot.contextPercent),
-      bottom === "" ? "" : text(LEFT, 122, bottom, { size: 11, fill: DIM }),
+      bottom === ""
+        ? ""
+        : text(LEFT, ROW.foot, bottom, { size: 11, fill: DIM }),
       // The terminal, far right of the bottom line: the one identifier that
       // gets you from a key back to a window, in space nothing else wanted.
       slot.terminal === undefined
         ? ""
-        : text(RIGHT, 122, slot.terminal, {
+        : text(RIGHT, ROW.foot, slot.terminal, {
             size: 10,
             fill: DIM,
             anchor: "end",
@@ -234,21 +247,27 @@ export function renderSlot(slot: Slot, frame = 0): string {
  */
 function identity(slot: Slot): string {
   const heading = (value: string): string =>
-    text(LEFT, 42, truncate(value, 11), { size: 17, weight: "700" })
-  const sub = (value: string, indent = 0): string =>
-    text(LEFT + indent, 62, truncate(value, indent === 0 ? 18 : 16), {
-      size: 11,
-      fill: DIM,
-    })
+    text(LEFT, ROW.heading, truncate(value, 11), { size: 17, weight: "700" })
 
   if (slot.name !== undefined) {
-    return heading(slot.name) + sub(slot.repo)
+    // The repo is an identity field, not a detail, so it gets a readable size
+    // rather than the smallest one that fits.
+    return (
+      heading(slot.name) +
+      text(LEFT, ROW.sub, truncate(slot.repo, 15), { size: 13, fill: DIM })
+    )
   }
   return (
     heading(slot.repo) +
+    // The slug stays smaller: it's already the longest string on the key, and
+    // with the repo above it in full it's detail rather than identity.
     (slot.worktree === undefined
       ? ""
-      : branchGlyph(LEFT + 3, 58) + sub(slot.worktree, 13))
+      : branchGlyph(LEFT + 3, ROW.sub - 4) +
+        text(LEFT + 13, ROW.sub, truncate(slot.worktree, 16), {
+          size: 11,
+          fill: DIM,
+        }))
   )
 }
 
