@@ -81,6 +81,19 @@ Presence is checked first, because being away is the more consequential fact
 and the one a status string can't express — Slack shows you as away whatever
 your status says.
 
+### Colours
+
+The key borrows Slack's own vocabulary, so it needs no learning:
+
+| Mode   | Key         | Matching Slack |
+| ------ | ----------- | -------------- |
+| Online | solid green | the active dot |
+| Focus  | red         | do-not-disturb |
+| Away   | hollow grey | the away dot   |
+
+A status you set by hand reads as **online**, not focus — red has to keep
+meaning "notifications are off" or it stops being information.
+
 Pressing it runs `sd-slack-status`, which walks a three-state cycle:
 
 | Mode    | Status                   | Presence |

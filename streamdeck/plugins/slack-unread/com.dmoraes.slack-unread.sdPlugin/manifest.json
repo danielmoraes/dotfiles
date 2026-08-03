@@ -53,9 +53,18 @@
       "Icon": "imgs/actions/status/icon",
       "Tooltip": "Show your Slack status; press to cycle online / focusing / away.",
       "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
       "States": [
         {
-          "Image": "imgs/actions/status/key",
+          "Image": "imgs/actions/status/key-online",
+          "TitleAlignment": "middle"
+        },
+        {
+          "Image": "imgs/actions/status/key-focus",
+          "TitleAlignment": "middle"
+        },
+        {
+          "Image": "imgs/actions/status/key-away",
           "TitleAlignment": "middle"
         }
       ]

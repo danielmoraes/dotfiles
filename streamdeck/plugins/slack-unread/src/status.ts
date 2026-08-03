@@ -109,6 +109,43 @@ export async function currentPresence(
   return body.presence === "away" ? "away" : "active"
 }
 
+/** What the key should show: a label and which state image to use. */
+export type StatusFace = {
+  title: string
+  /** Index into the action's `States`: 0 online, 1 focus, 2 away. */
+  state: 0 | 1 | 2
+}
+
+/**
+ * The key's face, from what Slack currently reports.
+ *
+ * Colours follow Slack's own vocabulary so the key needs no learning: solid
+ * green active, red do-not-disturb, hollow grey away.
+ */
+export function statusFace(
+  profile: Profile,
+  presence: Presence,
+  known: readonly {
+    name: string
+    emoji: string
+    text: string
+    keyLabel: string
+  }[],
+): StatusFace {
+  const title = statusLabel(profile, presence, known)
+  if (presence === "away") {
+    return { title, state: 2 }
+  }
+  const focus = known.find((p) => p.name === "focus")
+  const isFocus =
+    focus !== undefined &&
+    ((focus.emoji !== "" && focus.emoji === profile.emoji) ||
+      (focus.text !== "" && focus.text === profile.text))
+  // A hand-set status still means you're around, so it reads as online rather
+  // than borrowing focus's red — red should mean notifications are off.
+  return { title, state: isFocus ? 1 : 0 }
+}
+
 /**
  * Label for the key, from what Slack currently reports.
  *

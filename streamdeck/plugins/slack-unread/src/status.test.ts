@@ -3,6 +3,7 @@ import {
   type FetchLike,
   currentPresence,
   currentProfile,
+  statusFace,
   statusLabel,
 } from "./status"
 
@@ -111,4 +112,43 @@ test("a status set by hand in Slack is shown, not mislabelled", () => {
       MODES,
     ),
   ).toHaveLength(8)
+})
+
+test("statusFace picks a colour matching Slack's own vocabulary", () => {
+  // Green active / red do-not-disturb / grey away — so the key needs no
+  // learning for someone who already reads Slack's dots.
+  expect(statusFace({ emoji: "", text: "" }, "active", MODES)).toEqual({
+    title: "Online",
+    state: 0,
+  })
+  expect(
+    statusFace(
+      { emoji: ":no_bell:", text: "Focusing — back later" },
+      "active",
+      MODES,
+    ),
+  ).toEqual({ title: "Focus", state: 1 })
+  expect(statusFace({ emoji: "", text: "" }, "away", MODES)).toEqual({
+    title: "Away",
+    state: 2,
+  })
+})
+
+test("away colours grey even while a focus status is still set", () => {
+  // Slack shows the away dot regardless of status, so the key must agree.
+  expect(
+    statusFace(
+      { emoji: ":no_bell:", text: "Focusing — back later" },
+      "away",
+      MODES,
+    ),
+  ).toEqual({ title: "Away", state: 2 })
+})
+
+test("a hand-set status reads as online, not focus", () => {
+  // Red has to keep meaning "notifications are off", or it stops being
+  // information — a lunch emoji shouldn't borrow it.
+  expect(
+    statusFace({ emoji: ":coffee:", text: "brb" }, "active", MODES),
+  ).toEqual({ title: "brb", state: 0 })
 })

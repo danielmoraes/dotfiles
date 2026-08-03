@@ -7,7 +7,7 @@ import streamDeck, {
   type WillAppearEvent,
   type WillDisappearEvent,
 } from "@elgato/streamdeck"
-import { currentPresence, currentProfile, statusLabel } from "../status"
+import { currentPresence, currentProfile, statusFace } from "../status"
 
 export type SlackStatusSettings = {
   /** Seconds between reads of the live status. */
@@ -118,7 +118,12 @@ export class SlackStatus extends SingletonAction<SlackStatusSettings> {
         currentProfile({ token }),
         currentPresence({ token }),
       ])
-      await action.setTitle(statusLabel(profile, presence, MODES))
+      const face = statusFace(profile, presence, MODES)
+      await action.setTitle(face.title)
+      // setState only applies to keys; guard for dials/other controls.
+      if ("setState" in action) {
+        await action.setState(face.state)
+      }
     } catch (error) {
       streamDeck.logger.error(
         `slack status failed: ${error instanceof Error ? error.message : String(error)}`,
