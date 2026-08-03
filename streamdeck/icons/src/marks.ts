@@ -215,7 +215,21 @@ function commands(canvas: Canvas): void {
   )
 }
 
+/** jira: a stack of issue rows. */
+function jira(canvas: Canvas): void {
+  plate(canvas, BLUE)
+  const h = w(0.15)
+  canvas.fill(
+    union(
+      roundedRect(m(0.5), m(0.22), w(0.46), h, h * 0.55),
+      roundedRect(m(0.5), m(0.78), w(0.46), h, h * 0.55),
+    ),
+    WHITE,
+  )
+}
+
 export const MARKS: readonly Mark[] = [
+  { plugin: "com.dmoraes.jira", draw: jira },
   { plugin: "com.dmoraes.commands", draw: commands },
   { plugin: "com.dmoraes.calendar", draw: calendar },
   { plugin: "com.dmoraes.github-stats", draw: githubStats },

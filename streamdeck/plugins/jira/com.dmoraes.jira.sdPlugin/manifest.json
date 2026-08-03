@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "Name": "Jira",
+  "Version": "0.1.0.0",
+  "Author": "Daniel Moraes",
+  "UUID": "com.dmoraes.jira",
+  "Description": "Count Jira issues matching a JQL query, using the credentials in secrets.env.",
+  "Category": "Jira Count",
+  "CategoryIcon": "imgs/plugin/category",
+  "Icon": "imgs/plugin/icon",
+  "URL": "https://github.com/danielmoraes/dotfiles",
+  "SDKVersion": 3,
+  "Software": { "MinimumVersion": "6.9" },
+  "OS": [
+    { "Platform": "mac", "MinimumVersion": "12" },
+    { "Platform": "windows", "MinimumVersion": "10" }
+  ],
+  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "CodePath": "bin/plugin.js",
+  "Actions": [
+    {
+      "Name": "JQL Count",
+      "UUID": "com.dmoraes.jira.jql-count",
+      "Icon": "imgs/actions/jql-count/icon",
+      "Tooltip": "Show how many issues match a JQL query. Press to open it in Jira.",
+      "Controllers": ["Keypad"],
+      "DisableAutomaticStates": true,
+      "States": [
+        { "Image": "imgs/actions/jql-count/key", "TitleAlignment": "middle" },
+        {
+          "Image": "imgs/actions/jql-count/key-alert",
+          "TitleAlignment": "middle"
+        }
+      ]
+    }
+  ]
+}

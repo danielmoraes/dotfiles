@@ -53,8 +53,8 @@ const CALENDAR: PluginRef = {
 }
 const JIRA: PluginRef = {
   name: "Jira",
-  uuid: "com.mediabounds.streamdeck.jira",
-  version: "1.7.1",
+  uuid: "com.dmoraes.jira",
+  version: "0.1.0.0",
 }
 const SPOTIFY: PluginRef = {
   name: "Essentials for Spotify",
@@ -197,8 +197,12 @@ const WORK: Page = {
     {
       kind: "plugin",
       plugin: JIRA,
-      action: "com.mediabounds.streamdeck.jira.query",
-      name: "JQL Result",
+      action: "com.dmoraes.jira.jql-count",
+      name: "JQL Count",
+      settings: {
+        jql: "assignee = currentUser() AND statusCategory != Done",
+        warnAt: 1,
+      },
     },
     {
       kind: "plugin",

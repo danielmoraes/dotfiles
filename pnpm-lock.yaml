@@ -147,6 +147,34 @@ importers:
         specifier: 'catalog:'
         version: 8.21.1
 
+  streamdeck/plugins/jira:
+    dependencies:
+      '@elgato/streamdeck':
+        specifier: 'catalog:'
+        version: 2.1.0
+      streamdeck-secrets:
+        specifier: workspace:*
+        version: link:../../secrets
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.13.3
+      '@types/ws':
+        specifier: 'catalog:'
+        version: 8.18.1
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.14(typescript@7.0.2)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite-plus:
+        specifier: 'catalog:'
+        version: 0.2.7(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
+      ws:
+        specifier: 'catalog:'
+        version: 8.21.1
+
   streamdeck/plugins/slack-unread:
     dependencies:
       '@elgato/streamdeck':

@@ -59,8 +59,9 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
   Press opens the GitHub review queue.
 - **K2 My open PRs** — `is:open is:pr author:@me`.
 - **K3 CI status** — latest Actions conclusion for `danielmoraes/dotfiles@main`.
-- **K4 Jira** — `streamdeck-jira` JQL result count. Set the JQL in its
-  Property Inspector.
+- **K4 Jira** — issues matching a JQL query (default: assigned to you, not
+  done); red at ≥ 1. Press opens the query in Jira. Credentials come from
+  `secrets.env`.
 - **K5 Slack unread** — Slack's own badge (DMs + mentions), read from the
   desktop app's local state. Red at ≥ 1. Press opens Slack. Needs no token —
   see the plugin README for why the API route is closed.
@@ -106,9 +107,10 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 - **Pages, not folders or separate profiles.** Stream Deck 7.x has real pages,
   so one profile holds all three and K8 (_Next Page_) cycles them. A
   profile-per-page would only be worth it to auto-activate one per app.
-- Keys labelled _(script)_ use Elgato's **Open** action pointed at the built
-  `sd-*` command in `~/.local/bin` (see [`../scripts/`](../scripts/README.md)).
-  Logic lives in the scripts, so the profile stays thin and testable.
+- Keys labelled _(script)_ run the built `sd-*` command in `~/.local/bin` via
+  the `commands` plugin (see [`../scripts/`](../scripts/README.md)). Not Elgato's
+  **Open** action: that runs `open <path>`, which hands an extension-less script
+  to your terminal app instead of executing it.
 - Keys labelled _(plugin)_ come from [`../plugins/README.md`](../plugins/README.md).
 - **Secrets.** The app launches plugins and scripts with the _login_
   environment, not your shell's — so both load
