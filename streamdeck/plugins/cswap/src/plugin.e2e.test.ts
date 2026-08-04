@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process"
 import { once } from "node:events"
+import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { expect, test } from "vite-plus/test"
 import { WebSocketServer } from "ws"
+import { CSWAP } from "./cswap"
 
 // End-to-end via a MOCK STREAM DECK.
 //
@@ -22,10 +24,18 @@ import { WebSocketServer } from "ws"
 //
 // This talks to the real cswap and the real accounts, but only ever reads:
 // nothing here presses the dial, so no account is switched.
+//
+// Which is why it runs only where cswap is installed. The CLI is a uv tool on
+// this machine rather than something the repo can pull in, and the accounts it
+// reads live in the login Keychain — so on a CI runner there is nothing here to
+// be right or wrong about, and the test stands aside instead of failing.
 
 const PLUGIN_DIR = join(process.cwd(), "com.dmoraes.cswap.sdPlugin")
 const PLUGIN_ENTRY = join(PLUGIN_DIR, "bin", "plugin.js")
 const ACTION = "com.dmoraes.cswap.accounts"
+
+/** Only the machine that drives the deck has the CLI this test is about. */
+const INSTALLED = existsSync(CSWAP)
 
 /** A Stream Deck + — the only device with the dials this action needs. */
 const DEVICE = {
@@ -161,18 +171,22 @@ async function paintedSvg(): Promise<string> {
   }
 }
 
-test("the dial paints real account usage under launchd's PATH", async () => {
-  const svg = await paintedSvg()
+test.skipIf(!INSTALLED)(
+  "the dial paints real account usage under launchd's PATH",
+  async () => {
+    const svg = await paintedSvg()
 
-  // The error strip says "cswap" and names a reason; the real one never does.
-  // Checking this first turns a PATH regression into a legible failure rather
-  // than a puzzling mismatch below.
-  expect(svg, "painted the error strip instead of usage").not.toContain(
-    "did not return JSON",
-  )
-  expect(svg).toContain("5H WINDOW")
+    // The error strip says "cswap" and names a reason; the real one never does.
+    // Checking this first turns a PATH regression into a legible failure rather
+    // than a puzzling mismatch below.
+    expect(svg, "painted the error strip instead of usage").not.toContain(
+      "did not return JSON",
+    )
+    expect(svg).toContain("5H WINDOW")
 
-  // A bar track per account, and at least one account marked active.
-  expect(svg).toMatch(/<rect x="19"/)
-  expect(svg, "no account marked active").toContain('fill="#FFFFFF"')
-}, 30000)
+    // A bar track per account, and at least one account marked active.
+    expect(svg).toMatch(/<rect x="19"/)
+    expect(svg, "no account marked active").toContain('fill="#FFFFFF"')
+  },
+  30000,
+)
