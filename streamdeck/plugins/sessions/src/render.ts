@@ -13,7 +13,7 @@
  * through its context window the session is, and how long it has been running.
  */
 
-import { elapsedLabel, type Slot } from "./session"
+import { elapsedLabel, headingOf, type Slot } from "./session"
 
 /** Keys are 72x72 points; the @2x canvas every deck actually renders is 144. */
 const SIZE = 144
@@ -143,14 +143,19 @@ function text(
  * The obvious character for this is U+2442, but the deck renders SVG with
  * whatever fonts it has and an unusual glyph that falls back to tofu would be
  * worse than no marker at all. Six drawn primitives always render.
+ *
+ * `scale` because the glyph now sits on the 17px heading rather than the 11px
+ * line it was drawn for, and a marker built for the small line reads as a
+ * smudge beside bold text.
  */
-function branchGlyph(x: number, y: number): string {
-  const stroke = `stroke="${FAINT}" stroke-width="1.4" fill="none"`
+function branchGlyph(x: number, y: number, { scale = 1, colour = FAINT } = {}) {
+  const at = (n: number): number => round(n * scale)
+  const stroke = `stroke="${colour}" stroke-width="${at(1.4)}" fill="none"`
   return [
-    `<path d="M${x} ${y - 4} V${y + 4}" ${stroke} stroke-linecap="round"/>`,
-    `<path d="M${x} ${y} Q${x + 3} ${y} ${x + 5} ${y - 3}" ${stroke} stroke-linecap="round"/>`,
-    `<circle cx="${x}" cy="${y + 5}" r="1.6" fill="${FAINT}"/>`,
-    `<circle cx="${x + 6}" cy="${y - 4}" r="1.6" fill="${FAINT}"/>`,
+    `<path d="M${x} ${y - at(4)} V${y + at(4)}" ${stroke} stroke-linecap="round"/>`,
+    `<path d="M${x} ${y} Q${x + at(3)} ${y} ${x + at(5)} ${y - at(3)}" ${stroke} stroke-linecap="round"/>`,
+    `<circle cx="${x}" cy="${y + at(5)}" r="${at(1.6)}" fill="${colour}"/>`,
+    `<circle cx="${x + at(6)}" cy="${y - at(4)}" r="${at(1.6)}" fill="${colour}"/>`,
   ].join("")
 }
 
@@ -269,41 +274,54 @@ function footer(elapsed: string | undefined, startedAt: string | undefined) {
 }
 
 /**
- * The two identity lines: what this session is, then what it sits inside.
+ * The two identity lines: which session, then where it lives.
  *
- * The big line is always the best name available. A name you set with
- * `/rename` is the best there is — it's chosen, so it beats anything derived —
- * and the repo goes quietly underneath as context. Failing that the repo takes
- * the big line and the worktree slug goes below it, marked with a branch glyph
- * because that's what it is.
+ * **The bottom line is always the repo.** It used to be the repo on a named
+ * session and the worktree slug on an unnamed one, which meant the same
+ * position on two adjacent keys answered two different questions and a column
+ * of keys couldn't be read down. Now the repo holds that line on every key, and
+ * the deck sorts on it (see `order`), so sessions of one repo are a block with
+ * one word repeated down its second line.
  *
- * Either way the top line answers "which session" and the bottom one answers
- * "where", which is the order you read them in.
+ * That leaves the top line for whatever distinguishes this session *within* its
+ * repo: the name you set with `/rename` if there is one, otherwise the worktree
+ * slug, marked with a branch glyph because that's what it is.
+ *
+ * The exception is the one case with nothing to distinguish — an unnamed
+ * session in a plain checkout. There the repo takes the top line alone rather
+ * than being printed on the key twice.
  */
 function identity(slot: Slot): string {
-  const heading = (value: string): string =>
-    text(LEFT, ROW.heading, truncate(value, 11), { size: 17, weight: "700" })
+  const marked = slot.name === undefined && slot.worktree !== undefined
+  const value = headingOf(slot)
+  // A slug heading gets 8 characters where a name gets 11: the glyph in front
+  // of it costs about 15px, a character and a half at this size.
+  //
+  // Sized tighter than the 11 rather than merely proportionally, because the
+  // two budgets are estimating different things. A name is short and usually
+  // arrives whole, so 11 can assume average-width characters. Every worktree
+  // slug is three words long and *always* truncates, so this one has to hold
+  // for the wide end of the alphabet: at 17px bold an `m` is 0.89em against
+  // the ~0.55em the estimate assumes, and `calm-mapping-twilight` at 9 ran
+  // seven pixels past the right gutter that the percentage and clock line up
+  // against. Shrinking the slug instead would put a third font size on a key
+  // that has two, and the first word is what tells two worktrees apart anyway.
+  const heading = marked
+    ? branchGlyph(LEFT + 4, ROW.heading - 6, { scale: 1.4, colour: SUB }) +
+      text(LEFT + 15, ROW.heading, truncate(value, 8), {
+        size: 17,
+        weight: "700",
+      })
+    : text(LEFT, ROW.heading, truncate(value, 11), { size: 17, weight: "700" })
 
-  if (slot.name !== undefined) {
-    // The repo is an identity field, not a detail, so it gets a readable size
-    // rather than the smallest one that fits.
-    return (
-      heading(slot.name) +
-      text(LEFT, ROW.sub, truncate(slot.repo, 15), { size: 13, fill: SUB })
-    )
-  }
-  return (
-    heading(slot.repo) +
-    // The slug stays smaller: it's already the longest string on the key, and
-    // with the repo above it in full it's detail rather than identity.
-    (slot.worktree === undefined
+  // The repo is an identity field, not a detail, so it gets a readable size
+  // rather than the smallest one that fits.
+  const under =
+    slot.name === undefined && slot.worktree === undefined
       ? ""
-      : branchGlyph(LEFT + 3, ROW.sub - 4) +
-        text(LEFT + 13, ROW.sub, truncate(slot.worktree, 16), {
-          size: 11,
-          fill: SUB,
-        }))
-  )
+      : text(LEFT, ROW.sub, truncate(slot.repo, 15), { size: 13, fill: SUB })
+
+  return heading + under
 }
 
 /**

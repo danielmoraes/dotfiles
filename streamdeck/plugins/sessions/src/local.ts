@@ -24,6 +24,7 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { homedir } from "node:os"
 import { join } from "node:path"
+import { order } from "./session"
 
 /** How long a directory read is reused. */
 const TTL_MS = 1_000
@@ -116,9 +117,9 @@ export function isAlive(pid: number): boolean {
 /**
  * The live session set, cached so repaints don't rescan.
  *
- * Ordered oldest first, so a new session lands on the first free key at the end
- * instead of shuffling every other one along — the keys are muscle memory, and
- * a slot that moves under your finger is worse than no slot.
+ * Ordered for the deck by `order`, which is where the reasoning for that order
+ * lives — it sorts on what the keys print, so it belongs beside the code that
+ * decides what they print.
  */
 export class Sessions {
   private cache: LocalSession[] = []
@@ -159,10 +160,6 @@ export class Sessions {
         found.push(session)
       }
     }
-    return found.sort(
-      (a, b) =>
-        (a.startedAt ?? 0) - (b.startedAt ?? 0) ||
-        a.sessionId.localeCompare(b.sessionId),
-    )
+    return order(found)
   }
 }

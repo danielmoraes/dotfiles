@@ -2,6 +2,8 @@ import { expect, test } from "vite-plus/test"
 import type { LocalSession } from "./local"
 import {
   elapsedLabel,
+  headingOf,
+  order,
   repoOf,
   slotState,
   startedLabel,
@@ -91,4 +93,56 @@ test("the name and the state come off the record itself", () => {
 test("context is passed in, not read from the record", () => {
   const slot = toSlot({ pid: 1, sessionId: "s" }, 0, { contextPercent: 28.1 })
   expect(slot.contextPercent).toBe(28.1)
+})
+
+test("the heading is the best distinguisher, not the best name", () => {
+  const repo = "steward"
+  expect(headingOf({ repo, name: "stream deck", worktree: "slug" })).toBe(
+    "stream deck",
+  )
+  // No name: the slug says which of several checkouts of one repo this is.
+  expect(headingOf({ repo, worktree: "slug" })).toBe("slug")
+  // Nothing to distinguish — the repo is the whole answer.
+  expect(headingOf({ repo })).toBe("steward")
+})
+
+/** A record with just the fields the order depends on. */
+function at(sessionId: string, cwd: string, name?: string) {
+  return { pid: 1, sessionId, cwd, name }
+}
+
+test("sessions group by repo, then sort by the line their key leads with", () => {
+  const sessions = order([
+    at("1", "/w/steward/.claude/worktrees/zebra"),
+    at("2", "/w/dotfiles", "stream deck"),
+    at("3", "/w/steward", "auth fix"),
+    at("4", "/w/steward/.claude/worktrees/alpha"),
+  ])
+  // dotfiles before steward; then within steward, `alpha` / `auth fix` / `zebra`
+  // — the headings, whether they came from a slug or a name.
+  expect(sessions.map((s) => s.sessionId)).toEqual(["2", "4", "3", "1"])
+})
+
+test("case doesn't jump a key to the front, and 10 follows 2", () => {
+  const sessions = order([
+    at("1", "/w/repo-10"),
+    at("2", "/w/Repo-2"),
+    at("3", "/w/repo-1"),
+  ])
+  expect(sessions.map((s) => s.sessionId)).toEqual(["3", "2", "1"])
+})
+
+test("the order is total, so equal keys can't swap between repaints", () => {
+  // Same repo, same heading: only the session id is left to separate them, and
+  // it has to, or two keys would trade places on every read.
+  const forward = order([at("b", "/w/repo"), at("a", "/w/repo")])
+  const backward = order([at("a", "/w/repo"), at("b", "/w/repo")])
+  expect(forward.map((s) => s.sessionId)).toEqual(["a", "b"])
+  expect(backward.map((s) => s.sessionId)).toEqual(["a", "b"])
+})
+
+test("a session with no cwd sorts somewhere fixed instead of moving", () => {
+  const sessions = order([at("1", "/w/repo"), { pid: 1, sessionId: "2" }])
+  // `?` is what repoOf calls an unknown cwd; it just has to sort consistently.
+  expect(sessions.map((s) => s.sessionId)).toEqual(["2", "1"])
 })

@@ -23,7 +23,8 @@ import { WebSocketServer } from "ws"
 //     repo's `verify` skill).
 //  2. The manifest is valid enough for the SDK to route the action. Manifest
 //     errors are otherwise silent apart from one line in the Elgato log.
-//  3. Slots fill in key order — the second key gets the second session.
+//  3. Slots fill in key order — the second key gets the second session, with
+//     "second" decided by the real ordering rather than by directory order.
 //
 // Everything is a fixture in a temp directory, so this never reads the real
 // sessions or depends on any being open.
@@ -234,31 +235,34 @@ async function paintedKeys(home: string): Promise<Map<string, string>> {
   }
 }
 
-test("keys paint live sessions, oldest first, under launchd's PATH", async () => {
+test("keys paint live sessions, in repo order, under launchd's PATH", async () => {
   const { home, cleanup } = fixture()
   try {
     const painted = await paintedKeys(home)
     const first = painted.get("ctx-1") ?? ""
     const second = painted.get("ctx-2") ?? ""
 
-    // Slot order is key order, and the older session takes the first key.
-    expect(first, "first key did not take the oldest session").toContain(
-      ">steward<",
+    // Slot order is key order, sorted by repo: `dotfiles` before `steward`.
+    // The record for `steward` is written first and started first, so both the
+    // directory order and the old oldest-first sort would fail this.
+    expect(first, "first key did not take the first repo").toContain(
+      ">dotfiles<",
     )
-    expect(second).toContain(">dotfiles<")
+    expect(second).toContain(">steward<")
 
-    // A name someone chose displaces the worktree; a derived one doesn't.
-    expect(first).toContain(">stream deck<")
-    expect(second).not.toContain(">derived-thing<")
+    // A name someone chose leads its key; a derived one doesn't, which leaves
+    // that key's repo leading alone.
+    expect(second).toContain(">stream deck<")
+    expect(first).not.toContain(">derived-thing<")
 
-    // `busy` orbits teal, `idle` doesn't.
-    expect(first).toContain("#2DD4BF")
-    expect(second).not.toContain("#2DD4BF")
+    // `busy` orbits teal, `idle` doesn't — and `steward` is the busy one.
+    expect(second).toContain("#2DD4BF")
+    expect(first).not.toContain("#2DD4BF")
 
     // 280 616 tokens against the 1M window declared in settings. Reading 140%
     // here would mean the 200k default leaked back in.
     expect(
-      first,
+      second,
       "context is not a percentage of the declared window",
     ).toContain(">28%<")
   } finally {

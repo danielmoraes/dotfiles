@@ -18,23 +18,76 @@ const RUNNING: Slot = {
   startedAt: "16:06",
 }
 
-test("unnamed: the repo leads and the worktree sits under it", () => {
+test("unnamed: the worktree leads and the repo sits under it", () => {
   const svg = renderSlot(RUNNING)
-  expect(svg).toContain(">steward<")
-  // 16 characters plus an ellipsis, not AgentDeck's 13-character clip.
-  expect(svg).toContain(">calm-mapping-tw…<")
-  // The repo gets the big line.
-  expect(svg).toMatch(/font-size="17"[^>]*>steward</)
+  // The slug is what distinguishes this session from the other checkouts of
+  // the same repo, so it takes the heading...
+  expect(svg).toMatch(/font-size="17"[^>]*>calm-ma…</)
+  // ...and the repo holds the line it holds on every other key.
+  expect(svg).toMatch(/font-size="13"[^>]*>steward</)
+})
+
+/**
+ * Helvetica Bold advances, in em, for the characters slugs are made of —
+ * everything not listed is 0.556 (`a c e k s v x z`, and the digits).
+ *
+ * The deck renders with whatever sans it has, so this is an estimate. But it's
+ * the same estimate the character budgets in `render.ts` are making silently,
+ * and writing it down is what catches a budget that has stopped fitting.
+ */
+const EM: Record<string, number> = {
+  "…": 1.0,
+  m: 0.889,
+  w: 0.778,
+  b: 0.611,
+  d: 0.611,
+  g: 0.611,
+  h: 0.611,
+  n: 0.611,
+  o: 0.611,
+  p: 0.611,
+  q: 0.611,
+  u: 0.611,
+  r: 0.389,
+  "-": 0.333,
+  f: 0.333,
+  t: 0.333,
+  i: 0.278,
+  j: 0.278,
+  l: 0.278,
+}
+
+function widthOf(value: string, size: number): number {
+  return [...value].reduce((sum, char) => sum + (EM[char] ?? 0.556) * size, 0)
+}
+
+test("a slug heading stays inside the gutter the rest of the key uses", () => {
+  // A glyphed heading starts at x=35 and has to end by x=124, where the
+  // context percentage and the clock are right-aligned. These are the wide end
+  // of what Claude Code actually generates — `m` and `w` are the two widest
+  // letters there are, and a slug is three words' worth of chances to hit them.
+  for (const worktree of [
+    "calm-mapping-twilight",
+    "wobbling-marmalade-window",
+    "structured-conjuring-sketch",
+  ]) {
+    const svg = renderSlot({ ...RUNNING, worktree })
+    const heading = svg.match(/<text x="35" y="44"[^>]*>([^<]*)</)?.[1] ?? ""
+    expect(
+      35 + widthOf(heading, 17),
+      `"${worktree}" runs past the right gutter`,
+    ).toBeLessThanOrEqual(124)
+  }
 })
 
 test("named: the name leads and the repo sits under it", () => {
   const svg = renderSlot({ ...RUNNING, name: "stream deck" })
   // The name you chose is the identity, so it takes the heading...
   expect(svg).toMatch(/font-size="17"[^>]*>stream deck</)
-  // ...and the repo becomes the context line beneath it.
+  // ...and the repo is on the same line it was before, which is the point.
   expect(svg).toMatch(/font-size="13"[^>]*>steward</)
   // The slug is not worth a line once there's a name.
-  expect(svg).not.toContain(">calm-mapping-tw…<")
+  expect(svg).not.toContain("calm-mapp")
 })
 
 test("a named session in a plain checkout still shows its repo", () => {
@@ -45,6 +98,33 @@ test("a named session in a plain checkout still shows its repo", () => {
   })
   expect(svg).toMatch(/font-size="17"[^>]*>stream deck</)
   expect(svg).toMatch(/font-size="13"[^>]*>steward</)
+})
+
+test("the second line is the repo on every key that has two", () => {
+  // The inconsistency this layout replaced: the sub line used to be the repo
+  // on a named key and the slug on an unnamed one, so the same position on two
+  // adjacent keys answered two different questions.
+  const named = renderSlot({ ...RUNNING, name: "stream deck" })
+  const unnamed = renderSlot(RUNNING)
+  const sub = /<text x="20" y="66"[^>]*font-size="13"[^>]*>([^<]*)</
+  expect(named.match(sub)?.[1]).toBe("steward")
+  expect(unnamed.match(sub)?.[1]).toBe("steward")
+})
+
+test("nothing to distinguish: the repo leads alone rather than twice", () => {
+  const svg = renderSlot({ ...RUNNING, worktree: undefined })
+  expect(svg).toMatch(/font-size="17"[^>]*>steward</)
+  // Printing it again underneath would spend the key's second line saying what
+  // its first line already said.
+  expect(svg).not.toMatch(/font-size="13"[^>]*>steward</)
+})
+
+test("only a slug heading is marked as one", () => {
+  // The branch glyph says "this is a checkout, not a name you gave it".
+  const glyph = /<circle cx="\d+(?:\.\d+)?" cy="\d+(?:\.\d+)?" r="2\.24"/
+  expect(renderSlot(RUNNING)).toMatch(glyph)
+  expect(renderSlot({ ...RUNNING, name: "stream deck" })).not.toMatch(glyph)
+  expect(renderSlot({ ...RUNNING, worktree: undefined })).not.toMatch(glyph)
 })
 
 test("the key spends no pixels restating the state as a word", () => {

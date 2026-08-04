@@ -51,23 +51,25 @@ test("liveness is checked, so a crashed session's record doesn't linger", () => 
   expect(isAlive(2_147_483_647)).toBe(false)
 })
 
-test("sessions are listed oldest first, so a new one appends", () => {
+test("the listed set is in deck order, not the order the directory gave it", () => {
   const dir = mkdtempSync(join(tmpdir(), "sessions-"))
   try {
+    // Written newest-first, so passing this can't be the old oldest-first sort
+    // or the filesystem's own ordering surviving by luck.
     writeFileSync(
       join(dir, "1.json"),
-      record({ sessionId: "c", startedAt: 300 }),
+      record({ sessionId: "c", cwd: "/w/steward", startedAt: 300 }),
     )
     writeFileSync(
       join(dir, "2.json"),
-      record({ sessionId: "a", startedAt: 100 }),
+      record({ sessionId: "a", cwd: "/w/dotfiles", startedAt: 200 }),
     )
     writeFileSync(
       join(dir, "3.json"),
-      record({ sessionId: "b", startedAt: 200 }),
+      record({ sessionId: "b", cwd: "/w/assets", startedAt: 100 }),
     )
     const sessions = new Sessions(dir)
-    expect(sessions.list(0).map((s) => s.sessionId)).toEqual(["a", "b", "c"])
+    expect(sessions.list(0).map((s) => s.sessionId)).toEqual(["b", "a", "c"])
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
