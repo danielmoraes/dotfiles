@@ -91,15 +91,26 @@ export function profilesNamed(
 
 /** Write a built profile's files under `profilesDir`. */
 export async function writeProfile(
-  profile: { dirName: string; files: Record<string, unknown> },
+  profile: {
+    dirName: string
+    files: Record<string, unknown>
+    assets?: Record<string, string>
+  },
   profilesDir = PROFILES_DIR,
 ): Promise<string> {
   const root = join(profilesDir, profile.dirName)
   await rm(root, { recursive: true, force: true })
-  for (const [relative, contents] of Object.entries(profile.files)) {
+  const write = async (relative: string, contents: string): Promise<void> => {
     const target = join(root, relative)
     await mkdir(dirname(target), { recursive: true })
-    await writeFile(target, `${JSON.stringify(contents, null, 2)}\n`)
+    await writeFile(target, contents)
+  }
+  for (const [relative, contents] of Object.entries(profile.files)) {
+    await write(relative, `${JSON.stringify(contents, null, 2)}\n`)
+  }
+  // Key faces go in verbatim — they're SVG, not JSON.
+  for (const [relative, contents] of Object.entries(profile.assets ?? {})) {
+    await write(relative, contents)
   }
   return root
 }

@@ -8,18 +8,30 @@ import {
   PROFILE_NAME,
   ROWS,
 } from "./layout.ts"
+import { renderPageKey } from "./page-key.ts"
 
 /**
  * Serialise the layout into the Stream Deck app's on-disk profile format
  * (`ProfilesV3`), which is plain JSON:
  *
  *   <PROFILE-UUID>.sdProfile/
- *     manifest.json                     device + page list
+ *     manifest.json                        device + page list
  *     Profiles/<PAGE-UUID>/manifest.json   one per page: its keys and dials
+ *     Profiles/<PAGE-UUID>/Images/…        key faces this generator draws
  *
  * Page manifests hold a `Controllers` array — one entry for the Keypad, one for
  * the Encoder row — each mapping a `"col,row"` slot to an action.
  */
+
+/**
+ * The page-turn key's face, relative to its page directory.
+ *
+ * A key state may name an image, and the app resolves it against the page's own
+ * folder — which is how it stores a picture you drag onto a key, and the only
+ * way to put our own artwork on one of Elgato's built-in actions. See
+ * `page-key.ts` for why K8 needs it.
+ */
+const NEXT_PAGE_IMAGE = "Images/next-page.svg"
 
 export type Device = {
   Model: string
@@ -34,6 +46,8 @@ export type ProfileFiles = {
   dirName: string
   /** Relative file path -> JSON contents. */
   files: Record<string, unknown>
+  /** Relative file path -> verbatim text, for the key faces we draw. */
+  assets: Record<string, string>
 }
 
 /**
@@ -86,6 +100,29 @@ function keyState(title?: string): Record<string, unknown> {
   }
 }
 
+/**
+ * A key whose whole face is an image we drew.
+ *
+ * The label is part of that image, so the app's title layer is switched off
+ * rather than left to stack a second copy on a baseline of its own choosing.
+ * `Title` is still carried: it's what the Stream Deck app's editor lists the
+ * key as, and losing it would make the profile unreadable in the UI.
+ */
+function drawnState(title: string, image: string): Record<string, unknown> {
+  return {
+    FontFamily: "",
+    FontSize: 11,
+    FontStyle: "",
+    FontUnderline: false,
+    Image: image,
+    OutlineThickness: 2,
+    ShowTitle: false,
+    Title: title,
+    TitleAlignment: "bottom",
+    TitleColor: "#ffffff",
+  }
+}
+
 function action(
   binding: Binding,
   seed: string,
@@ -131,11 +168,13 @@ function action(
         UUID: "com.elgato.streamdeck.system.website",
       }
     case "nextPage":
+      // Elgato's own action, wearing our artwork: it turns the page, and
+      // `page-key.ts` draws the face so the key looks like the deck it's on.
       return {
         ...base,
         Name: "Next Page",
         Settings: {},
-        States: [keyState(binding.title)],
+        States: [drawnState(binding.title, NEXT_PAGE_IMAGE)],
         UUID: "com.elgato.streamdeck.page.next",
       }
     case "multimedia":
@@ -241,12 +280,25 @@ export function buildProfile(
     },
   }
 
+  const assets: Record<string, string> = {}
   pages.forEach((page, index) => {
     const uuid = pageUuids[index]
-    if (uuid) {
-      files[`Profiles/${uuid}/manifest.json`] = pageManifest(page)
+    if (!uuid) {
+      return
+    }
+    files[`Profiles/${uuid}/manifest.json`] = pageManifest(page)
+    // The face is per page, not per profile: it names the page it leads to and
+    // marks the one it sits on, so each page gets its own copy in its own
+    // folder — which is also the only place the app looks for it.
+    const next = page.keys.find((key) => key?.kind === "nextPage")
+    if (next?.kind === "nextPage") {
+      assets[`Profiles/${uuid}/${NEXT_PAGE_IMAGE}`] = renderPageKey({
+        label: next.title,
+        index,
+        total: pages.length,
+      })
     }
   })
 
-  return { dirName: `${profileUuid}.sdProfile`, files }
+  return { dirName: `${profileUuid}.sdProfile`, files, assets }
 }

@@ -174,6 +174,52 @@ test("K8 on every page advances to the next page, so the cycle closes", () => {
   }
 })
 
+test("K8 wears our own face, with the app's title layer off", () => {
+  // Elgato's built-in action ships a solid white badge and centres the label on
+  // a baseline nothing else on the deck uses — see `page-key.ts`. The state
+  // image replaces the badge; ShowTitle: false stops the app stacking a second
+  // copy of the label over the one drawn into that image.
+  for (const page of PAGES) {
+    const { keypad } = controllers(pageManifest(page))
+    const k8 = keypad[`${COLUMNS - 1},${ROWS - 1}`]
+    if (!isRecord(k8) || !Array.isArray(k8.States)) {
+      throw new Error(`${page.title} has no K8`)
+    }
+    const state = k8.States[0]
+    if (!isRecord(state)) {
+      throw new Error(`${page.title} K8 has no state`)
+    }
+    expect(state.Image, `${page.title} K8`).toBe("Images/next-page.svg")
+    expect(state.ShowTitle, `${page.title} K8`).toBe(false)
+    // Still named, so the key is legible in the Stream Deck app's own editor —
+    // and named for the page it lands on, with no arrow: the face draws one.
+    expect(String(state.Title)).not.toMatch(/[▶>›→]/)
+  }
+})
+
+test("each page ships the face its K8 wears, in its own folder", () => {
+  const { files, assets } = buildProfile(DEVICE)
+  const manifest = files["manifest.json"]
+  if (!isRecord(manifest) || !isRecord(manifest.Pages)) {
+    throw new Error("bad manifest")
+  }
+  const pages = Array.isArray(manifest.Pages.Pages) ? manifest.Pages.Pages : []
+  expect(pages).toHaveLength(PAGES.length)
+
+  // The face names the page it leads to and marks the page it sits on, so it
+  // can't be shared across pages — one per page directory, which is also the
+  // only place the app looks for a key's image.
+  for (const [index, id] of pages.entries()) {
+    const svg =
+      assets[`Profiles/${String(id).toUpperCase()}/Images/next-page.svg`]
+    expect(svg, `page ${index + 1}`).toBeDefined()
+    expect(String(svg)).toContain(String(PAGES[index]?.keys[7]?.title))
+  }
+  // Three faces and nothing else: an asset that isn't a page face means
+  // something started shipping artwork without a test.
+  expect(Object.keys(assets)).toHaveLength(PAGES.length)
+})
+
 test("dial entries carry an Encoder block and keys do not", () => {
   const { keypad, encoder } = controllers(pageManifest(PAGES[0]!))
   for (const entry of Object.values(encoder)) {

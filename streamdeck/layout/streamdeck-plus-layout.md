@@ -90,7 +90,7 @@ The default page: every live Claude Code session at once.
 [K1] Session 0        [K2] Session 1       [K3] Session 2       [K4] Session 3
      (sessions)           (sessions)           (sessions)           (sessions)
 
-[K5] Session 4        [K6] Session 5       [K7] Session 6       [K8] Work ▶
+[K5] Session 4        [K6] Session 5       [K7] Session 6       [K8] Work ›
      (sessions)           (sessions)           (sessions)           (next page)
 ```
 
@@ -160,7 +160,7 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 [K1] PRs to review    [K2] My open PRs     [K3] CI status       [K4] Jira
      (github-stats)       (github-stats)       (github-stats)       (JQL result)
 
-[K5] Slack unread     [K6] Next meeting    [K7] Slack status    [K8] Modes ▶
+[K5] Slack unread     [K6] Next meeting    [K7] Slack status    [K8] Modes ›
      (slack-unread)       (calendar)           (script)             (next page)
 ```
 
@@ -192,7 +192,7 @@ Glanceable state. These keys mostly _display_; pressing opens the relevant app.
 [K1] Focus mode       [K2] Meeting mode    [K3] Quick capture   [K4] Weekly metrics
      (script)             (script)             (script)             (weekly-metrics)
 
-[K5] —                [K6] —               [K7] Standup         [K8] Agents ▶
+[K5] —                [K6] —               [K7] Standup         [K8] Agents ›
      open                 open                 (script)             (home)
 ```
 
@@ -224,6 +224,29 @@ wanted — that's user-editable and can name whichever player is actually in use
 - **Pages, not folders or separate profiles.** Stream Deck 7.x has real pages,
   so one profile holds all three and K8 (_Next Page_) cycles them. A
   profile-per-page would only be worth it to auto-activate one per app.
+- **K8 turns the page, but doesn't wear Elgato's face for it.** The built-in
+  _Next Page_ action ships a solid white rounded square with a chevron cut out
+  of it, 54px in the middle of the key, and its label goes through the app's own
+  title layer — centred on a baseline nothing else on the deck uses. On a deck
+  of black keys and quiet text that badge was the brightest object on every
+  page, a way of *getting somewhere* out-shouting seven readouts of *what's
+  happening*, and the one word under it sat between the rows its neighbours are
+  set on. So the action keeps the behaviour and
+
+  ```
+  ┌────────────────┐
+  │  Work        › │  where it goes — on the session keys' heading line,
+  │                │  in their gutter, with a drawn chevron (not a `▶`,
+  │                │  which is a *play* triangle, and not any character
+  │  ● ○ ○         │  at all: the deck has no font guarantee)
+  └────────────────┘     where you are — on their footer line
+  ```
+
+  is drawn by [`../profiles/src/page-key.ts`](../profiles/src/page-key.ts) and
+  handed over as the key's state image, with the app's title layer switched off.
+  A key state may name an image and the app resolves it against the page's own
+  folder, which is how it stores a picture you drag onto a key — and the only
+  way to put your own artwork on one of Elgato's built-ins.
 - Keys labelled _(script)_ run the built `sd-*` command in `~/.local/bin` via
   the `commands` plugin (see [`../scripts/`](../scripts/README.md)). Not Elgato's
   **Open** action: that runs `open <path>`, which hands an extension-less script

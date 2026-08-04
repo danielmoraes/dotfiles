@@ -63,7 +63,10 @@ export type Binding =
   | { kind: "run"; command: string; args?: string[]; title: string }
   /** Open a URL in the browser. */
   | { kind: "website"; url: string; title: string }
-  /** Advance to the next page of this profile. */
+  /**
+   * Advance to the next page of this profile. `title` is the page it lands on,
+   * bare — `page-key.ts` draws the arrow, so the label doesn't carry one.
+   */
   | { kind: "nextPage"; title: string }
   /**
    * Elgato's built-in "Multimedia" system action — sends real hardware media
@@ -236,7 +239,7 @@ const AGENTS: Page = {
   title: "Agents",
   keys: [
     ...Array.from({ length: 7 }, () => SESSION_SLOT),
-    { kind: "nextPage", title: "Work ▶" },
+    { kind: "nextPage", title: "Work" },
   ],
   dials: DIAL_STRIP,
 }
@@ -310,7 +313,7 @@ const WORK: Page = {
       name: "Slack Status",
       settings: { refreshSeconds: 60 },
     },
-    { kind: "nextPage", title: "Modes ▶" },
+    { kind: "nextPage", title: "Modes" },
   ],
   dials: DIAL_STRIP,
 }
@@ -341,7 +344,7 @@ const MODES: Page = {
     null,
     null,
     run("sd-standup", "Standup"),
-    { kind: "nextPage", title: "Agents ▶" },
+    { kind: "nextPage", title: "Agents" },
   ],
   dials: DIAL_STRIP,
 }
