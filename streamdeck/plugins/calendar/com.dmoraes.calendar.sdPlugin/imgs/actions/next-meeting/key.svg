@@ -1,7 +1,7 @@
 <!-- Key image: 72x72. The action writes "TITLE\ncountdown" as the key title,
      so this stays a quiet backdrop. Blue = "work / status" (see icons/README). -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
-  <rect width="72" height="72" rx="10" fill="#16191F" />
+  <rect width="72" height="72" rx="10" fill="#000000" />
   <g fill="none" stroke="#8B93A5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
     <rect x="27" y="8" width="18" height="15" rx="3" />
     <path d="M27 13h18" />

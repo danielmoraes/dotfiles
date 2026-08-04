@@ -2,7 +2,7 @@
      key — this action is Encoder-only. The dial itself draws the live strip
      through setFeedback, so nothing here is data-bearing. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
-  <rect width="72" height="72" rx="10" fill="#16191F" />
+  <rect width="72" height="72" rx="10" fill="#000000" />
   <circle cx="14" cy="26" r="4.5" fill="#FFFFFF" />
   <rect x="24" y="22.5" width="34" height="7" rx="3.5" fill="#2A2F3A" />
   <rect x="24" y="22.5" width="12" height="7" rx="3.5" fill="#3B82F6" />

@@ -29,7 +29,17 @@ dependencies, and the same source renders both sizes exactly.
   **modes/metrics = green** (`#22C55E`), **media = teal**.
 - Key backgrounds stay quiet — a small glyph up top and a coloured rule along
   the bottom — because the action writes the actual value as the key _title_
-  over the middle. An "attention" variant swaps the rule to red (`#EF4444`).
+  over the middle.
+- **A resting key is black** (`#000000`), like the deck's own unlit keys and
+  everything else drawn here — the session keys, the `cswap` dial strip, the
+  page-turn key. A near-black card (`#16191F`) looks considered in isolation and
+  reads as a grey rectangle in a row of black ones; that's what pulled the
+  session keys black in `07e1f32` and the dial strip in `99aa6d8`, and the same
+  applies to a key background sitting on the same deck.
+- **An "attention" variant swaps the rule to red** (`#EF4444`) and warms the
+  card — `#1F1416` for alert, `#1F1A14` for a countdown running out. Against a
+  black resting key those read as a lit card, not just a hue shift: the whole
+  key comes up, which is the point of a state you're meant to catch sideways-on.
 - Elgato's specs: category icon 28×28 and action icon 20×20, both monochrome
   white on transparent; key images 72×72 (144×144 @2x).
 
