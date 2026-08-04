@@ -1,6 +1,7 @@
 import { expect, test } from "vite-plus/test"
 import {
   escapeXml,
+  FRAME_MS,
   renderEmpty,
   renderSlot,
   severity,
@@ -146,6 +147,25 @@ test("the orbit moves with the frame, and the still key doesn't", () => {
   expect(renderSlot(RUNNING, 0)).not.toBe(renderSlot(RUNNING, 7))
   const idle: Slot = { ...RUNNING, state: "idle" }
   expect(renderSlot(idle, 0)).toBe(renderSlot(idle, 7))
+})
+
+test("the orbit reads as work moving, not as drift", () => {
+  // Moving *at all* isn't the bar — the first cut moved, and lapped in about
+  // eight seconds, which is two full seconds to cross one side of the key. So
+  // the assertion is a distance: whatever the frame rate and lap time are, a
+  // second of them has to carry the dash at least the width of the panel it's
+  // travelling round.
+  const offsetAt = (frame: number): number => {
+    const found = renderSlot(RUNNING, frame).match(
+      /stroke-dashoffset="(-?\d+(?:\.\d+)?)"/,
+    )?.[1]
+    if (found === undefined) {
+      throw new Error("the running border isn't dashed")
+    }
+    return Number(found)
+  }
+  const second = Math.round(1000 / FRAME_MS)
+  expect(Math.abs(offsetAt(second) - offsetAt(0))).toBeGreaterThanOrEqual(128)
 })
 
 test("the bottom line leads with elapsed, at a size you can read", () => {

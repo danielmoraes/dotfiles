@@ -5,7 +5,7 @@ import {
 } from "@elgato/streamdeck"
 import { Context, DEFAULT_WINDOW } from "../context"
 import { Sessions } from "../local"
-import { renderEmpty, renderSlot, svgDataUri } from "../render"
+import { FRAME_MS, renderEmpty, renderSlot, svgDataUri } from "../render"
 import { toSlot } from "../session"
 
 export type SlotSettings = {
@@ -26,18 +26,12 @@ export type SlotSettings = {
 }
 
 /**
- * Repaint interval while something is animating — 10fps reads as motion.
- *
- * The underlying reads are cached well below this (the session directory for a
- * second, transcripts for five), so a frame is almost always pure rendering.
- */
-const FRAME_MS = 100
-/**
  * Repaint interval when every session is idle.
  *
  * Nothing is moving, so the only reasons to repaint are the elapsed clocks and
- * noticing a session waking up — both of which a second serves. Holding 10fps
- * against seven static keys would be work with nothing to show for it.
+ * noticing a session waking up — both of which a second serves. Holding the
+ * animation frame rate against seven static keys would be work with nothing to
+ * show for it.
  */
 const RESTING_MS = 1_000
 

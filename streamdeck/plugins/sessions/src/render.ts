@@ -90,10 +90,40 @@ const ALERT = "#EF4444"
 /** Running is teal — cool, and deliberately not the amber that means "you". */
 const RUNNING = "#2DD4BF"
 
-/** Pixels the orbiting dash travels per animation frame. */
-const ORBIT_SPEED = 6
+/**
+ * Repaint interval while something is animating.
+ *
+ * Lives here rather than with the loop that uses it because it's the animation
+ * clock: the two motions below are written as durations, and it's this that
+ * turns them into per-frame steps.
+ *
+ * The first cut ran at 10fps, which is enough to *carry* motion but not enough
+ * to carry it quickly — the orbit had to step ~14px a frame to lap in a few
+ * seconds, and a 14px step reads as a chasing light rather than a moving dash.
+ * The underlying reads are cached well below this (the session directory for a
+ * second, transcripts for five), so the extra frames are pure rendering.
+ */
+export const FRAME_MS = 70
+/**
+ * How long the travelling dash takes to go once round the panel.
+ *
+ * Was effectively 8s, which is slower than anything else on the desk that means
+ * "working" and read as drift — the dash took two full seconds to cross one
+ * side of the key. A lap in the low seconds is a spinner's pace: unmistakably
+ * moving from the corner of your eye, without becoming the brightest thing in
+ * the room.
+ */
+const ORBIT_LAP_MS = 3_200
 /** How much of the perimeter the travelling dash covers. */
 const ORBIT_DASH = 120
+/**
+ * One full in-and-out of the awaiting pulse.
+ *
+ * Faster than a resting breath on purpose. This state means the session has
+ * stopped and wants you, so its motion should feel like a raised hand rather
+ * than something sleeping; the old ~2.2s cycle was the latter.
+ */
+const BREATHE_MS = 1_200
 
 export function severity(pct: number): string {
   if (pct >= 80) {
@@ -177,7 +207,8 @@ function border(slot: Slot, frame: number): string {
     `fill="none" stroke="${stroke}" stroke-width="${width}" ${extra}/>`
 
   if (slot.state === "running") {
-    const offset = round(-((frame * ORBIT_SPEED) % PERIMETER))
+    const perFrame = (PERIMETER * FRAME_MS) / ORBIT_LAP_MS
+    const offset = round(-((frame * perFrame) % PERIMETER))
     const dash = `stroke-dasharray="${round(ORBIT_DASH)} ${round(PERIMETER - ORBIT_DASH)}" stroke-dashoffset="${offset}" stroke-linecap="round"`
     // Two passes rather than a blur filter: a wide faint stroke under a narrow
     // bright one gives the same glow for a fraction of the render cost, and
@@ -188,7 +219,9 @@ function border(slot: Slot, frame: number): string {
     )
   }
   if (slot.state === "awaiting") {
-    const breathe = round(0.45 + 0.55 * Math.abs(Math.sin(frame * 0.14)))
+    // `abs` folds the sine, so a full pulse is half a period — hence π, not 2π.
+    const perFrame = (Math.PI * FRAME_MS) / BREATHE_MS
+    const breathe = round(0.45 + 0.55 * Math.abs(Math.sin(frame * perFrame)))
     return (
       rect(WARN, 7, `opacity="${round(breathe * 0.35)}"`) +
       rect(WARN, 3, `opacity="0.97"`)
