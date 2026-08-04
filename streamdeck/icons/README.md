@@ -29,7 +29,8 @@ dependencies, and the same source renders both sizes exactly.
   **modes/metrics = green** (`#22C55E`), **media = teal**.
 - Key backgrounds stay quiet — a small glyph up top and a coloured rule along
   the bottom — because the action writes the actual value as the key _title_
-  over the middle.
+  over the middle. That middle is why every key title is centred, including the
+  static ones: bottom-aligning them puts the word through the rule.
 - **A resting key is black** (`#000000`), like the deck's own unlit keys and
   everything else drawn here — the session keys, the `cswap` dial strip, the
   page-turn key. A near-black card (`#16191F`) looks considered in isolation and

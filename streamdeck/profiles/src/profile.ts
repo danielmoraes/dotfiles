@@ -82,7 +82,18 @@ export function stableUuid(seed: string): string {
     .toUpperCase()
 }
 
-/** Key titles render small at the bottom; plugin actions draw their own. */
+/**
+ * A key whose label the app draws over the action's backdrop.
+ *
+ * Centred, always — including for keys carrying a static `title`, which used to
+ * hang off the bottom edge. Every key backdrop in this repo is built for a
+ * centred label: a small glyph up top, a coloured category rule along the
+ * bottom, and the middle left clear for the value the action writes (see
+ * `../../icons/README.md`). Bottom-aligning the static ones put "Focus",
+ * "Meeting", "Capture" and "Standup" straight through that rule, and left
+ * page 3 reading at two label heights — those four against the middle-aligned
+ * weekly-metrics key beside them.
+ */
 function keyState(title?: string): Record<string, unknown> {
   if (title === undefined) {
     return { ShowTitle: true, TitleAlignment: "middle", TitleColor: "#ffffff" }
@@ -95,7 +106,7 @@ function keyState(title?: string): Record<string, unknown> {
     OutlineThickness: 2,
     ShowTitle: true,
     Title: title,
-    TitleAlignment: "bottom",
+    TitleAlignment: "middle",
     TitleColor: "#ffffff",
   }
 }
@@ -118,7 +129,7 @@ function drawnState(title: string, image: string): Record<string, unknown> {
     OutlineThickness: 2,
     ShowTitle: false,
     Title: title,
-    TitleAlignment: "bottom",
+    TitleAlignment: "middle",
     TitleColor: "#ffffff",
   }
 }
