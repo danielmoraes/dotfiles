@@ -142,6 +142,17 @@ test("the strip draws a row per account, marking the active one", () => {
   expect(svg).toContain("4h 25m")
 })
 
+test("the strip is black, like the dials drawn beside it", () => {
+  // The near-black card read as a grey panel in a row of black dial segments.
+  for (const svg of [
+    renderSvg([PERSONAL, WORK], "fiveHour"),
+    renderError("x"),
+  ]) {
+    expect(svg).toContain('fill="#000000"')
+    expect(svg).not.toContain("#16191F")
+  }
+})
+
 /** Widths of the bar rects only — the full-canvas background isn't one. */
 function barWidths(svg: string): number[] {
   return [...svg.matchAll(/<rect x="19" y="[\d.]+" width="([\d.]+)"/g)].map(

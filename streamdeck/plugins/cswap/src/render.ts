@@ -58,7 +58,15 @@ const HEADER_H = 24
 const GUTTER = 19
 const RIGHT = 194
 
-const BG = "#16191F"
+/**
+ * Black, for the same reason the session keys are: the strip is one LCD split
+ * between four dials, and the three beside this one are drawn by the app itself
+ * against black. A near-black card (#16191F) looked considered on its own and
+ * read as a grey rectangle sitting in that row. Black also buys contrast — the
+ * dimmest text goes from ~3.6:1 against the old card to ~4.3:1, and the empty
+ * part of each bar's track from ~1.3:1 to ~1.6:1.
+ */
+const BG = "#000000"
 const DIM = "#6B7280"
 const TRACK = "#2A2F3A"
 const WHITE = "#FFFFFF"
