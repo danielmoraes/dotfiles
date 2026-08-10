@@ -21,9 +21,9 @@ catalogs:
     typescript:
       specifier: ^7.0.0
       version: 7.0.2
-    ws:
-      specifier: ^8.18.0
-      version: 8.21.1
+    vite-plus:
+      specifier: ^0.2.7
+      version: 0.2.8
 
 importers:
 
@@ -86,7 +86,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/plugins/commands:
     dependencies:
@@ -114,7 +114,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/plugins/cswap:
     dependencies:
@@ -139,7 +139,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/plugins/github-stats:
     dependencies:
@@ -167,7 +167,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/plugins/jira:
     dependencies:
@@ -195,7 +195,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/plugins/sessions:
     dependencies:
@@ -220,7 +220,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/plugins/slack-unread:
     dependencies:
@@ -248,7 +248,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/plugins/weekly-metrics:
     dependencies:
@@ -279,7 +279,7 @@ importers:
         version: 0.2.8(@types/node@24.13.3)(typescript@7.0.2)(vite@8.2.0(@types/node@24.13.3))
       ws:
         specifier: 'catalog:'
-        version: 8.21.1
+        version: 8.21.3
 
   streamdeck/profiles:
     devDependencies:
@@ -1944,18 +1944,6 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  ws@8.21.1:
-    resolution: {integrity: sha512-+0NTnW77fFN/DjQi6k/Sq/Yvk4Sgajw7urW8V+asjXnRgDs9gyGkdb7EzgfhA4goXsRIZKE28fzIXBHEzhuiWw==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
   ws@8.21.3:
     resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
     engines: {node: '>=10.0.0'}
@@ -2006,7 +1994,7 @@ snapshots:
     dependencies:
       '@elgato/schemas': 0.4.15
       '@elgato/utils': 0.4.5
-      ws: 8.21.1
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -3127,8 +3115,6 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
-
-  ws@8.21.1: {}
 
   ws@8.21.3: {}
 
