@@ -21,7 +21,7 @@ jobs:
       # No `version:` here — pnpm/action-setup reads it from packageManager in
       # package.json (single source of truth), so Renovate's pnpm bumps stay green.
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
           cache: pnpm
