@@ -17,7 +17,7 @@ jobs:
     name: check + test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # No `version:` here — pnpm/action-setup reads it from packageManager in
       # package.json (single source of truth), so Renovate's pnpm bumps stay green.
       - uses: pnpm/action-setup@v4
@@ -34,7 +34,7 @@ jobs:
     name: shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ludeeus/action-shellcheck@master
         with:
           scandir: "."
@@ -43,7 +43,7 @@ jobs:
     name: gitleaks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
